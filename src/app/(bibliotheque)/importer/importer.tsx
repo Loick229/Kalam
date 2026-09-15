@@ -11,7 +11,7 @@ import { ACCEPTED, detectFormat, extractDocument, type ExtractResult } from "@/l
 import { GENRES } from "@/lib/labels";
 import { uploadCover } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
-import type { Genre } from "@/lib/types";
+import type { Genre, WritingFolder } from "@/lib/types";
 import { cn, countWords, excerpt } from "@/lib/utils";
 
 interface Item {
@@ -22,12 +22,13 @@ interface Item {
   result?: ExtractResult;
   title: string;
   genre: Genre;
+  folderId: string | null;
   cover?: File;
   coverPreview?: string;
   words?: number;
 }
 
-export function Importer({ userId, penName }: { userId: string; penName: string | null }) {
+export function Importer({ userId, penName, folders }: { userId: string; penName: string | null; folders: WritingFolder[] }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -45,6 +46,7 @@ export function Importer({ userId, penName }: { userId: string; penName: string 
       error: detectFormat(file) ? undefined : "Format non pris en charge",
       title: file.name.replace(/\.[^.]+$/, ""),
       genre: "document",
+      folderId: folders[0]?.id ?? null,
     }));
     setItems((list) => [...list, ...fresh]);
 
@@ -90,6 +92,7 @@ export function Importer({ userId, penName }: { userId: string; penName: string 
           id,
           title: it.title.trim() || "Sans titre",
           genre: it.genre,
+          folder_id: it.folderId,
           author: penName,
           content: it.result!.content,
           content_text: text,
@@ -219,6 +222,19 @@ export function Importer({ userId, penName }: { userId: string; penName: string 
                         {GENRES.map((g) => (
                           <option key={g.value} value={g.value}>
                             {g.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field label="Dossier">
+                      <Select
+                        value={it.folderId ?? ""}
+                        onChange={(e) => update(it.key, { folderId: e.target.value || null })}
+                      >
+                        <option value="">Tous les écrits</option>
+                        {folders.map((folder) => (
+                          <option key={folder.id} value={folder.id}>
+                            {folder.name}
                           </option>
                         ))}
                       </Select>

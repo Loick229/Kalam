@@ -1,21 +1,21 @@
 "use client";
 
-import { ArrowDownUp, FileUp, LayoutGrid, List, PenLine, Search, Trash2 } from "lucide-react";
+import { ArrowDownUp, FileUp, Folder, FolderPlus, LayoutGrid, List, PenLine, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { createWriting, deleteWriting } from "@/app/actions";
+import { createFolder, createWriting, deleteWriting } from "@/app/actions";
 import { LogoMark } from "@/components/logo";
 import { Button, IconButton, StatusDot } from "@/components/ui";
-import { GENRES, genreLabel, statusLabel } from "@/lib/labels";
-import type { Genre, WritingCard } from "@/lib/types";
+import { genreLabel, statusLabel } from "@/lib/labels";
+import type { Genre, WritingCard, WritingFolder } from "@/lib/types";
 import { cn, normalize, relativeDate } from "@/lib/utils";
 
 type Sort = "date" | "title" | "genre";
 type View = "grid" | "list";
 
-export function Library({ writings }: { writings: WritingCard[] }) {
+export function Library({ writings, folders }: { writings: WritingCard[]; folders: WritingFolder[] }) {
   const [query, setQuery] = useState("");
-  const [genre, setGenre] = useState<Genre | "all">("all");
+  const [folderId, setFolderId] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort>("date");
   const [view, setView] = useState<View>("grid");
 
@@ -37,7 +37,7 @@ export function Library({ writings }: { writings: WritingCard[] }) {
     const q = normalize(query);
     const list = writings.filter(
       (w) =>
-        (genre === "all" || w.genre === genre) &&
+        (folderId === null || w.folder_id === folderId) &&
         (!q || normalize(`${w.title} ${w.subtitle ?? ""} ${w.excerpt} ${w.tags.join(" ")}`).includes(q)),
     );
     return list.sort((a, b) => {
@@ -45,7 +45,7 @@ export function Library({ writings }: { writings: WritingCard[] }) {
       if (sort === "genre") return genreLabel(a.genre).localeCompare(genreLabel(b.genre), "fr");
       return b.updated_at.localeCompare(a.updated_at);
     });
-  }, [writings, query, genre, sort]);
+  }, [writings, query, folderId, sort]);
 
   const totalWords = writings.reduce((n, w) => n + w.word_count, 0);
 
@@ -70,6 +70,7 @@ export function Library({ writings }: { writings: WritingCard[] }) {
             Importer
           </Link>
           <form action={createWriting}>
+            {folderId && <input type="hidden" name="folder_id" value={folderId} />}
             <Button type="submit" className="w-full">
               <PenLine size={17} strokeWidth={1.75} />
               Nouvel écrit
@@ -92,25 +93,6 @@ export function Library({ writings }: { writings: WritingCard[] }) {
             className="h-11 w-full rounded-md border border-rule bg-card pr-3 pl-10 text-[0.9375rem] placeholder:text-mist focus:border-blue focus:ring-2 focus:ring-blue/15 focus:outline-none"
           />
         </label>
-
-        <div className="flex items-center justify-between gap-3">
-          <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 lg:mx-0 lg:px-0">
-            {[{ value: "all" as const, label: "Tout" }, ...GENRES].map((g) => (
-              <button
-                key={g.value}
-                onClick={() => setGenre(g.value)}
-                className={cn(
-                  "h-8 shrink-0 rounded-full border px-3 text-[0.8125rem] transition",
-                  genre === g.value
-                    ? "border-ink bg-ink text-paper"
-                    : "border-rule text-ink-soft hover:border-mist",
-                )}
-              >
-                {g.label === "Document importé" ? "Importés" : g.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div className="flex items-center gap-1 self-end lg:self-auto">
           <label className="relative mr-1 flex items-center gap-1.5 text-sm text-ink-soft">
@@ -136,7 +118,9 @@ export function Library({ writings }: { writings: WritingCard[] }) {
       </div>
 
       {/* Contenu */}
-      <div className="mt-8">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr]">
+        <FolderNav folders={folders} writings={writings} selected={folderId} onSelect={setFolderId} />
+        <div>
         {writings.length === 0 ? (
           <EmptyLibrary />
         ) : shown.length === 0 ? (
@@ -160,8 +144,61 @@ export function Library({ writings }: { writings: WritingCard[] }) {
             ))}
           </ul>
         )}
+        </div>
       </div>
     </div>
+  );
+}
+
+function FolderNav({
+  folders,
+  writings,
+  selected,
+  onSelect,
+}: {
+  folders: WritingFolder[];
+  writings: WritingCard[];
+  selected: string | null;
+  onSelect: (id: string | null) => void;
+}) {
+  const [newFolder, setNewFolder] = useState(false);
+  return (
+    <aside className="h-fit border-y border-rule py-4 lg:border-y-0 lg:border-r lg:pr-6">
+      <div className="flex items-center justify-between">
+        <p className="eyebrow">Dossiers</p>
+        <button type="button" onClick={() => setNewFolder((value) => !value)} title="Nouveau dossier" className="text-mist hover:text-ink">
+          <FolderPlus size={17} strokeWidth={1.75} />
+        </button>
+      </div>
+      {newFolder && (
+        <form action={createFolder} className="mt-3 flex gap-2">
+          <input name="name" required placeholder="Nom du dossier" className="h-9 min-w-0 flex-1 rounded-md border border-rule bg-card px-2 text-sm" />
+          <button type="submit" className="h-9 rounded-md bg-ink px-3 text-xs text-paper">Créer</button>
+        </form>
+      )}
+      <div className="mt-3 space-y-0.5">
+        <FolderButton active={selected === null} count={writings.length} onClick={() => onSelect(null)} label="Tous les écrits" />
+        {folders.map((folder) => (
+          <FolderButton
+            key={folder.id}
+            active={selected === folder.id}
+            count={writings.filter((writing) => writing.folder_id === folder.id).length}
+            onClick={() => onSelect(folder.id)}
+            label={folder.name}
+          />
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function FolderButton({ active, count, label, onClick }: { active: boolean; count: number; label: string; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition", active ? "bg-ink text-paper" : "text-ink-soft hover:bg-wash hover:text-ink")}>
+      <Folder size={16} strokeWidth={1.75} />
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className={cn("text-xs", active ? "text-paper/70" : "text-mist")}>{count}</span>
+    </button>
   );
 }
 

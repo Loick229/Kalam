@@ -29,9 +29,18 @@ create trigger on_auth_user_created
 -- ---------------------------------------------------------------------
 --  Écrits : poèmes, nouvelles, textes, livres, documents importés.
 -- ---------------------------------------------------------------------
+create table if not exists public.writing_folders (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  name       text not null,
+  parent_id  uuid references public.writing_folders (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.writings (
   id             uuid primary key default gen_random_uuid(),
   user_id        uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  folder_id      uuid references public.writing_folders (id) on delete set null,
   title          text not null default 'Sans titre',
   subtitle       text,
   author         text,
@@ -68,6 +77,7 @@ create index if not exists writings_user_updated_idx
 -- Migration des installations existantes.
 alter table public.writings add column if not exists page_theme text not null default 'papier';
 alter table public.writings add column if not exists page_background_url text;
+alter table public.writings add column if not exists folder_id uuid references public.writing_folders (id) on delete set null;
 alter table public.writings drop constraint if exists writings_genre_check;
 alter table public.writings add constraint writings_genre_check check (
   genre in ('poeme', 'nouvelle', 'texte', 'livre', 'document', 'romance', 'policier', 'fantasy', 'science_fiction', 'erotique', 'theatre', 'essai', 'autobiographie')
@@ -121,12 +131,17 @@ create trigger sheets_touch before update on public.summary_sheets
 --  Sécurité : chacun ne voit et ne modifie que ses propres données.
 -- ---------------------------------------------------------------------
 alter table public.profiles       enable row level security;
+alter table public.writing_folders enable row level security;
 alter table public.writings       enable row level security;
 alter table public.summary_sheets enable row level security;
 
 drop policy if exists "profil personnel" on public.profiles;
 create policy "profil personnel" on public.profiles
   for all using (id = auth.uid()) with check (id = auth.uid());
+
+drop policy if exists "dossiers personnels" on public.writing_folders;
+create policy "dossiers personnels" on public.writing_folders
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 drop policy if exists "écrits personnels" on public.writings;
 create policy "écrits personnels" on public.writings

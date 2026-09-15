@@ -17,10 +17,19 @@ export type Genre =
 export type PageTheme = "papier" | "nuit" | "foret" | "ocean" | "rose" | "ambre";
 export type Status = "brouillon" | "en_cours" | "termine";
 
+export interface WritingFolder {
+  id: string;
+  user_id: string;
+  name: string;
+  parent_id: string | null;
+  created_at: string;
+}
+
 /** Un écrit tel que stocké dans la table `writings`. */
 export interface Writing {
   id: string;
   user_id: string;
+  folder_id: string | null;
   title: string;
   subtitle: string | null;
   author: string | null;
@@ -49,6 +58,7 @@ export interface Writing {
 export type WritingCard = Pick<
   Writing,
   | "id"
+  | "folder_id"
   | "title"
   | "subtitle"
   | "genre"

@@ -7,10 +7,10 @@ import { BackgroundPicker } from "@/components/background-picker";
 import { Drawer, Field, Input, Select, Textarea } from "@/components/ui";
 import type { WritingPatch } from "@/lib/editor/use-autosave";
 import { GENRES, PAGE_THEMES, STATUSES } from "@/lib/labels";
-import type { Genre, PageTheme, Status, Writing } from "@/lib/types";
+import type { Genre, PageTheme, Status, Writing, WritingFolder } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "page_theme" | "page_background_url" | "status" | "summary" | "tags">;
+type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "page_theme" | "page_background_url" | "folder_id" | "status" | "summary" | "tags">;
 
 /** Panneau « Informations » : métadonnées, couverture, suppression. */
 export function DetailsDrawer({
@@ -26,6 +26,7 @@ export function DetailsDrawer({
   backgroundBusy,
   onBackgroundPick,
   onBackgroundRemove,
+  folders,
 }: {
   open: boolean;
   onClose: () => void;
@@ -39,6 +40,7 @@ export function DetailsDrawer({
   backgroundBusy: boolean;
   onBackgroundPick: (f: File) => void;
   onBackgroundRemove: () => void;
+  folders: WritingFolder[];
 }) {
   const [tagText, setTagText] = useState(meta.tags.join(", "));
   const [sharing, setSharing] = useState(writing.visibility === "link" && !!writing.share_slug);
@@ -150,6 +152,17 @@ export function DetailsDrawer({
             {PAGE_THEMES.map((theme) => (
               <option key={theme.value} value={theme.value}>
                 {theme.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label="Dossier">
+          <Select value={meta.folder_id ?? ""} onChange={(e) => onChange({ folder_id: e.target.value || null })}>
+            <option value="">Tous les écrits</option>
+            {folders.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.name}
               </option>
             ))}
           </Select>

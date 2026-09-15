@@ -15,7 +15,7 @@ import { draftKey, readBackup, useAutosave, type SaveState, type WritingPatch } 
 import { genreLabel } from "@/lib/labels";
 import { uploadCover, uploadTextImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
-import type { Writing } from "@/lib/types";
+import type { Writing, WritingFolder } from "@/lib/types";
 import { cn, estimatePages, excerpt } from "@/lib/utils";
 
 const PLACEHOLDERS: Record<string, string> = {
@@ -30,16 +30,19 @@ export function Studio({
   initial,
   initialCoverUrl,
   userId,
+  folders,
 }: {
   initial: Writing;
   initialCoverUrl: string | null;
   userId: string;
+  folders: WritingFolder[];
 }) {
   const { state, savedAt, queue, flush } = useAutosave(initial.id);
   const [meta, setMeta] = useState({
     title: initial.title,
     subtitle: initial.subtitle,
     author: initial.author,
+    folder_id: initial.folder_id ?? null,
     genre: initial.genre,
     page_theme: initial.page_theme ?? "papier",
     page_background_url: initial.page_background_url ?? null,
@@ -209,7 +212,7 @@ export function Studio({
     if (!backup || !editor) return;
     const { content, ...rest } = backup.patch;
     if (content) editor.commands.setContent(content, { emitUpdate: true });
-    const metaKeys = ["title", "subtitle", "author", "genre", "page_theme", "status", "summary", "tags"] as const;
+    const metaKeys = ["title", "subtitle", "author", "genre", "page_theme", "page_background_url", "folder_id", "status", "summary", "tags"] as const;
     const metaPatch = Object.fromEntries(metaKeys.filter((k) => k in rest).map((k) => [k, rest[k]]));
     if (Object.keys(metaPatch).length) changeMeta(metaPatch as WritingPatch);
     queue(backup.patch);
@@ -439,6 +442,7 @@ export function Studio({
         open={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         writing={initial}
+        folders={folders}
         meta={meta}
         onChange={changeMeta}
         coverUrl={coverUrl}

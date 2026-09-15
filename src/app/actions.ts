@@ -9,17 +9,28 @@ import { createClient, requireUser } from "@/lib/supabase/server";
 export async function createWriting(formData: FormData) {
   const { supabase, user } = await requireUser();
   const genre = (formData.get("genre") as Genre | null) ?? "texte";
+  const folderId = String(formData.get("folder_id") ?? "").trim() || null;
 
   const { data: profile } = await supabase.from("profiles").select("pen_name").eq("id", user.id).maybeSingle();
 
   const { data, error } = await supabase
     .from("writings")
-    .insert({ title: "Sans titre", genre, author: profile?.pen_name ?? null })
+    .insert({ title: "Sans titre", genre, folder_id: folderId, author: profile?.pen_name ?? null })
     .select("id")
     .single();
 
   if (error) throw new Error(error.message);
   redirect(`/ecrits/${data.id}`);
+}
+
+export async function createFolder(formData: FormData) {
+  const { supabase } = await requireUser();
+  const name = String(formData.get("name") ?? "").trim();
+  const parentId = String(formData.get("parent_id") ?? "").trim() || null;
+  if (!name) return;
+  const { error } = await supabase.from("writing_folders").insert({ name, parent_id: parentId });
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
 }
 
 /** Supprime un écrit, sa fiche (cascade) et ses fichiers. */
