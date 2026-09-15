@@ -303,11 +303,15 @@ body {
   min-height: 0;
   max-height: 100%;
   margin: 0;
+  padding-bottom: clamp(4rem, 8vw, 6rem);
   overflow: hidden;
 }
 @media (max-width: 640px) {
   .book-page {
     padding: 2rem 1.5rem;
+  }
+  .book-mode .book-page {
+    padding-bottom: 4.5rem;
   }
 }
 
