@@ -360,6 +360,8 @@ body {
   max-height: 100%;
   margin: 0;
   padding-bottom: clamp(4rem, 8vw, 6rem);
+  background: var(--paper);
+  color: var(--ink);
   overflow: hidden;
 }
 @media (max-width: 640px) {
