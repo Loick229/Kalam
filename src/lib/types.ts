@@ -26,6 +26,7 @@ export interface Writing {
   author: string | null;
   genre: Genre;
   page_theme: PageTheme;
+  page_background_url: string | null;
   status: Status;
   summary: string | null;
   tags: string[];

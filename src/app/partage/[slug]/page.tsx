@@ -11,6 +11,7 @@ type SharedWriting = {
   author: string | null;
   genre: Genre;
   page_theme: PageTheme;
+  page_background_url: string | null;
   cover_path: string | null;
   content: Parameters<typeof BookMode>[0]["content"];
 };
@@ -19,7 +20,7 @@ async function getSharedWriting(slug: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("writings")
-    .select("title, subtitle, author, genre, page_theme, content, cover_path")
+    .select("title, subtitle, author, genre, page_theme, page_background_url, content, cover_path")
     .eq("share_slug", slug)
     .maybeSingle();
   return data as SharedWriting | null;
@@ -49,6 +50,7 @@ export default async function SharedWritingPage({ params }: { params: Promise<{ 
       author={writing.author}
       genre={writing.genre}
       pageTheme={writing.page_theme ?? "papier"}
+      backgroundUrl={writing.page_background_url}
       coverUrl={coverUrl}
       content={writing.content}
     />

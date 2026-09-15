@@ -3,13 +3,14 @@
 import { useEffect, useState, useTransition } from "react";
 import { deleteWriting, setWritingSharing } from "@/app/actions";
 import { CoverPicker } from "@/components/cover-picker";
+import { BackgroundPicker } from "@/components/background-picker";
 import { Drawer, Field, Input, Select, Textarea } from "@/components/ui";
 import type { WritingPatch } from "@/lib/editor/use-autosave";
 import { GENRES, PAGE_THEMES, STATUSES } from "@/lib/labels";
 import type { Genre, PageTheme, Status, Writing } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "page_theme" | "status" | "summary" | "tags">;
+type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "page_theme" | "page_background_url" | "status" | "summary" | "tags">;
 
 /** Panneau « Informations » : métadonnées, couverture, suppression. */
 export function DetailsDrawer({
@@ -22,6 +23,9 @@ export function DetailsDrawer({
   coverBusy,
   onCoverPick,
   onCoverRemove,
+  backgroundBusy,
+  onBackgroundPick,
+  onBackgroundRemove,
 }: {
   open: boolean;
   onClose: () => void;
@@ -32,6 +36,9 @@ export function DetailsDrawer({
   coverBusy: boolean;
   onCoverPick: (f: File) => void;
   onCoverRemove: () => void;
+  backgroundBusy: boolean;
+  onBackgroundPick: (f: File) => void;
+  onBackgroundRemove: () => void;
 }) {
   const [tagText, setTagText] = useState(meta.tags.join(", "));
   const [sharing, setSharing] = useState(writing.visibility === "link" && !!writing.share_slug);
@@ -69,6 +76,15 @@ export function DetailsDrawer({
       <div className="space-y-5">
         <Field label="Couverture">
           <CoverPicker url={coverUrl} busy={coverBusy} onPick={onCoverPick} onRemove={onCoverRemove} />
+        </Field>
+
+        <Field label="Fond de la zone de texte">
+          <BackgroundPicker
+            url={meta.page_background_url}
+            busy={backgroundBusy}
+            onPick={onBackgroundPick}
+            onRemove={onBackgroundRemove}
+          />
         </Field>
 
         <div className="rounded-md border border-rule bg-wash px-4 py-3">

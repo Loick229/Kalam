@@ -57,6 +57,7 @@ create table if not exists public.writings (
   share_slug     text unique,
   page_theme     text not null default 'papier'
                  check (page_theme in ('papier', 'nuit', 'foret', 'ocean', 'rose', 'ambre')),
+  page_background_url text,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
@@ -66,6 +67,7 @@ create index if not exists writings_user_updated_idx
 
 -- Migration des installations existantes.
 alter table public.writings add column if not exists page_theme text not null default 'papier';
+alter table public.writings add column if not exists page_background_url text;
 alter table public.writings drop constraint if exists writings_genre_check;
 alter table public.writings add constraint writings_genre_check check (
   genre in ('poeme', 'nouvelle', 'texte', 'livre', 'document', 'romance', 'policier', 'fantasy', 'science_fiction', 'erotique', 'theatre', 'essai', 'autobiographie')

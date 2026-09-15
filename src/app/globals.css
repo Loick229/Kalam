@@ -364,6 +364,19 @@ body {
   color: var(--ink);
   overflow: hidden;
 }
+.writing-text-zone {
+  background-color: var(--paper);
+  background-position: center;
+  background-size: cover;
+  background-attachment: local;
+  background-blend-mode: soft-light;
+}
+.book-mode .book-page.has-page-background {
+  background-color: var(--paper);
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: soft-light;
+}
 @media (max-width: 640px) {
   .book-page {
     padding: 2rem 1.5rem;

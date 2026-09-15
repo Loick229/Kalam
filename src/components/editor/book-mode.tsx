@@ -41,6 +41,7 @@ export function BookMode({
   author,
   genre,
   pageTheme = "papier",
+  backgroundUrl,
   coverUrl,
   onClose,
 }: {
@@ -50,6 +51,7 @@ export function BookMode({
   author: string | null;
   genre: Genre;
   pageTheme?: PageTheme;
+  backgroundUrl?: string | null;
   coverUrl?: string | null;
   onClose?: () => void;
 }) {
@@ -106,7 +108,10 @@ export function BookMode({
         </button>
 
         {isTitlePage ? (
-          <div className="book-title-page book-page w-full">
+          <div
+            className={`book-title-page book-page w-full${backgroundUrl ? " has-page-background" : ""}`}
+            style={backgroundUrl ? { backgroundImage: `url("${backgroundUrl}")` } : undefined}
+          >
             <p className="eyebrow">{genreLabel(genre)}</p>
             <div className="my-auto text-center">
               {coverUrl && (
@@ -119,7 +124,10 @@ export function BookMode({
             <span className="eyebrow text-center">Kalam</span>
           </div>
         ) : (
-          <article className="book-page w-full">
+          <article
+            className={`book-page w-full${backgroundUrl ? " has-page-background" : ""}`}
+            style={backgroundUrl ? { backgroundImage: `url("${backgroundUrl}")` } : undefined}
+          >
             <div
               className="book-prose"
               dangerouslySetInnerHTML={{

@@ -42,6 +42,7 @@ export function Studio({
     author: initial.author,
     genre: initial.genre,
     page_theme: initial.page_theme ?? "papier",
+    page_background_url: initial.page_background_url ?? null,
     status: initial.status,
     summary: initial.summary,
     tags: initial.tags,
@@ -49,6 +50,7 @@ export function Studio({
   const [coverPath, setCoverPath] = useState(initial.cover_path);
   const [coverUrl, setCoverUrl] = useState(initialCoverUrl);
   const [coverBusy, setCoverBusy] = useState(false);
+  const [backgroundBusy, setBackgroundBusy] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [outlineAside, setOutlineAside] = useState(true);
   const [outlineDrawer, setOutlineDrawer] = useState(false);
@@ -101,7 +103,7 @@ export function Studio({
       attributes: {
         class: "kalam-prose",
         "data-genre": initial.genre,
-        "data-page-theme": initial.page_theme,
+        "data-page-theme": initial.page_theme ?? "papier",
         spellcheck: "true",
         lang: "fr",
       },
@@ -126,7 +128,7 @@ export function Studio({
         },
       },
     });
-  }, [editor, meta.genre]);
+  }, [editor, meta.genre, meta.page_theme]);
 
   // Copie de secours plus récente trouvée sur l'appareil ?
   useEffect(() => {
@@ -184,6 +186,23 @@ export function Studio({
     } catch (error) {
       alert(`L’image n’a pas pu être ajoutée : ${(error as Error).message}`);
     }
+  }
+
+  async function pickBackground(file: File) {
+    setBackgroundBusy(true);
+    try {
+      const supabase = createClient();
+      const url = await uploadTextImage(supabase, userId, initial.id, file);
+      changeMeta({ page_background_url: url });
+    } catch (error) {
+      alert(`Le fond n’a pas pu être envoyé : ${(error as Error).message}`);
+    } finally {
+      setBackgroundBusy(false);
+    }
+  }
+
+  function removeBackground() {
+    changeMeta({ page_background_url: null });
   }
 
   function restoreBackup() {
@@ -371,7 +390,10 @@ export function Studio({
         )}
 
         {/* Page */}
-        <main className={cn("mx-auto w-full max-w-[44rem] px-5 pb-40 sm:px-8", focus ? "pt-24" : "pt-10 md:pt-16")}>
+        <main
+          className={cn("writing-text-zone mx-auto w-full max-w-[44rem] px-5 pb-40 sm:px-8", focus ? "pt-24" : "pt-10 md:pt-16")}
+          style={meta.page_background_url ? { backgroundImage: `url("${meta.page_background_url}")` } : undefined}
+        >
           <div className={cn("mb-10 transition", focus && "opacity-60")}>
             <p className="eyebrow">{genreLabel(meta.genre)}</p>
             <AutoGrowTitle
@@ -423,6 +445,9 @@ export function Studio({
         coverBusy={coverBusy}
         onCoverPick={pickCover}
         onCoverRemove={removeCover}
+        backgroundBusy={backgroundBusy}
+        onBackgroundPick={pickBackground}
+        onBackgroundRemove={removeBackground}
       />
 
       {bookMode && (
@@ -433,6 +458,7 @@ export function Studio({
           author={meta.author}
           genre={meta.genre}
           pageTheme={meta.page_theme}
+          backgroundUrl={meta.page_background_url}
           coverUrl={coverUrl}
           onClose={() => setBookMode(false)}
         />
