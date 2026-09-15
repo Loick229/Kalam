@@ -20,7 +20,6 @@ async function getSharedWriting(slug: string) {
     .from("writings")
     .select("title, subtitle, author, genre, content, cover_path")
     .eq("share_slug", slug)
-    .eq("visibility", "link")
     .maybeSingle();
   return data as SharedWriting | null;
 }

@@ -119,7 +119,8 @@ create policy "écrits personnels" on public.writings
 
 drop policy if exists "lecture des écrits partagés" on public.writings;
 create policy "lecture des écrits partagés" on public.writings
-  for select using (visibility = 'link' and share_slug is not null);
+  for select to anon, authenticated
+  using (share_slug is not null);
 
 drop policy if exists "fiches personnelles" on public.summary_sheets;
 create policy "fiches personnelles" on public.summary_sheets
@@ -138,12 +139,11 @@ create policy "fichiers personnels - lecture" on storage.objects
 
 drop policy if exists "lecture des couvertures partagées" on storage.objects;
 create policy "lecture des couvertures partagées" on storage.objects
-  for select using (
+  for select to anon, authenticated using (
     bucket_id = 'covers'
     and exists (
       select 1 from public.writings
       where writings.cover_path = storage.objects.name
-        and writings.visibility = 'link'
         and writings.share_slug is not null
     )
   );
