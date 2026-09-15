@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+/* Le mode nuit est piloté par la classe .dark sur <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Polices du livre, pour les aperçus du choix de police. */
+@font-face {
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-400-normal.woff") format("woff");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Crimson Pro";
+  src: url("/fonts/crimson-pro-400-normal.woff") format("woff");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lora";
+  src: url("/fonts/lora-400-normal.woff") format("woff");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/playfair-display-400-normal.woff") format("woff");
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------
+   Palette Kalam — encre & papier
+   Les couleurs sont des variables CSS : le mode nuit ne fait que les
+   redéfinir, les composants n'ont rien à savoir.
+   ------------------------------------------------------------------ */
+:root {
+  --paper: #fafafa;
+  --card: #ffffff;
+  --ink: #0b0e14;
+  --ink-soft: #3a404c;
+  --mist: #94a3b8;
+  --rule: #e6e8ec;
+  --wash: #f1f2f4;
+  --blue: #1e40af;
+  --blue-ink: #1e40af;
+  --red: #c1121f;
+  --shadow: 0 1px 2px rgb(11 14 20 / 0.04), 0 6px 20px -8px rgb(11 14 20 / 0.12);
+}
+
+.dark {
+  --paper: #0b0e14;
+  --card: #121620;
+  --ink: #e8e9ec;
+  --ink-soft: #b4bac6;
+  --mist: #7b8699;
+  --rule: #222835;
+  --wash: #181d28;
+  --blue: #2c4fc4;
+  --blue-ink: #8aa4f5;
+  --red: #e0303c;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-mist: var(--mist);
+  --color-rule: var(--rule);
+  --color-wash: var(--wash);
+  --color-blue: var(--blue);
+  --color-blue-ink: var(--blue-ink);
+  --color-red: var(--red);
+
+  --font-display: var(--font-playfair), "Georgia", serif;
+  --font-serif: var(--font-lora), "Georgia", serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --shadow-card: var(--shadow);
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--blue) 22%, transparent);
+}
+
+/* Petites capitales espacées : étiquettes, rubriques. */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+/* Filet fin avec le point rouge — motif de signature. */
+.signature-rule {
+  position: relative;
+  height: 1px;
+  background: var(--rule);
+}
+.signature-rule::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -2.5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--red);
+}
+
+/* Barre de défilement horizontale discrète (barre d'outils mobile). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ------------------------------------------------------------------
+   Page d'écriture (Tiptap)
+   ------------------------------------------------------------------ */
+.kalam-prose {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--ink);
+  outline: none;
+  min-height: 60vh;
+  caret-color: var(--red);
+}
+@media (min-width: 768px) {
+  .kalam-prose {
+    font-size: 1.1875rem;
+  }
+}
+.kalam-prose > * + * {
+  margin-top: 0.9em;
+}
+.kalam-prose h1,
+.kalam-prose h2,
+.kalam-prose h3 {
+  font-family: var(--font-display);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  scroll-margin-top: 6rem;
+}
+.kalam-prose h1 {
+  font-size: 2rem;
+  margin-top: 2.2em;
+  font-weight: 600;
+}
+.kalam-prose h2 {
+  font-size: 1.5rem;
+  margin-top: 1.8em;
+  font-weight: 600;
+}
+.kalam-prose h3 {
+  font-size: 1.2rem;
+  margin-top: 1.5em;
+  font-weight: 600;
+  font-style: italic;
+}
+.kalam-prose > :first-child {
+  margin-top: 0;
+}
+.kalam-prose ul,
+.kalam-prose ol {
+  padding-left: 1.4em;
+}
+.kalam-prose ul {
+  list-style: disc;
+}
+.kalam-prose ol {
+  list-style: decimal;
+}
+.kalam-prose li::marker {
+  color: var(--mist);
+}
+.kalam-prose li p {
+  margin: 0.2em 0;
+}
+.kalam-prose blockquote {
+  border-left: 2px solid var(--red);
+  padding-left: 1.1em;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.kalam-prose a {
+  color: var(--blue-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.kalam-prose hr {
+  border: 0;
+  text-align: center;
+  margin: 2.2em 0;
+}
+.kalam-prose hr::before {
+  content: "⁂";
+  color: var(--mist);
+  font-size: 1.1rem;
+}
+.kalam-prose div[data-page-break] {
+  position: relative;
+  margin: 2.4em 0;
+  border-top: 1px dashed var(--rule);
+  user-select: none;
+}
+.kalam-prose div[data-page-break]::after {
+  content: "saut de page";
+  position: absolute;
+  left: 50%;
+  top: -0.7em;
+  transform: translateX(-50%);
+  padding: 0 0.7em;
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.kalam-prose .ProseMirror-selectednode {
+  outline: 2px solid color-mix(in srgb, var(--blue) 40%, transparent);
+  outline-offset: 4px;
+}
+.kalam-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--mist);
+  font-style: italic;
+}
+
+/* Poèmes : texte non justifié, aéré. */
+.kalam-prose[data-genre="poeme"] p {
+  margin-top: 0.15em;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+}

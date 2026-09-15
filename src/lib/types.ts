@@ -1,0 +1,66 @@
+import type { JSONContent } from "@tiptap/core";
+
+export type Genre = "poeme" | "nouvelle" | "texte" | "livre" | "document";
+export type Status = "brouillon" | "en_cours" | "termine";
+
+/** Un écrit tel que stocké dans la table `writings`. */
+export interface Writing {
+  id: string;
+  user_id: string;
+  title: string;
+  subtitle: string | null;
+  author: string | null;
+  genre: Genre;
+  status: Status;
+  summary: string | null;
+  tags: string[];
+  content: JSONContent | null;
+  content_text: string;
+  excerpt: string;
+  word_count: number;
+  cover_path: string | null;
+  source_format: string | null;
+  source_name: string | null;
+  source_path: string | null;
+  imported_at: string | null;
+  visibility: "private" | "link" | "public";
+  share_slug: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Version allégée utilisée par la bibliothèque (sans le contenu complet). */
+export type WritingCard = Pick<
+  Writing,
+  | "id"
+  | "title"
+  | "subtitle"
+  | "genre"
+  | "status"
+  | "word_count"
+  | "cover_path"
+  | "source_format"
+  | "tags"
+  | "updated_at"
+  | "created_at"
+  | "excerpt"
+> & { cover_url: string | null };
+
+/** Fiche de résumé (table `summary_sheets`). */
+export interface SummarySheet {
+  id: string;
+  writing_id: string;
+  user_id: string;
+  title: string | null;
+  author: string | null;
+  theme: string | null;
+  word_count: number | null;
+  page_count: number | null;
+  short_summary: string | null;
+  long_summary: string | null;
+  characters: string | null;
+  quotes: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
