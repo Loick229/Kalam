@@ -58,6 +58,54 @@
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.6);
 }
 
+/* Ambiances de lecture choisies pour un écrit. */
+.writing-surface[data-page-theme="nuit"],
+.book-mode[data-page-theme="nuit"] {
+  --paper: #171b24;
+  --card: #202633;
+  --ink: #eef1f5;
+  --ink-soft: #c2c9d4;
+  --mist: #8e99aa;
+  --rule: #303949;
+  --wash: #11151d;
+}
+.writing-surface[data-page-theme="foret"],
+.book-mode[data-page-theme="foret"] {
+  --paper: #edf3ed;
+  --card: #f9fcf8;
+  --ink: #17241c;
+  --ink-soft: #496051;
+  --rule: #d4e1d5;
+  --wash: #e2ece3;
+}
+.writing-surface[data-page-theme="ocean"],
+.book-mode[data-page-theme="ocean"] {
+  --paper: #edf5f8;
+  --card: #fbfeff;
+  --ink: #14252b;
+  --ink-soft: #49636b;
+  --rule: #d2e3e8;
+  --wash: #e1eef2;
+}
+.writing-surface[data-page-theme="rose"],
+.book-mode[data-page-theme="rose"] {
+  --paper: #fff1f3;
+  --card: #fffafb;
+  --ink: #321b22;
+  --ink-soft: #76515a;
+  --rule: #f0d9de;
+  --wash: #fbe3e7;
+}
+.writing-surface[data-page-theme="ambre"],
+.book-mode[data-page-theme="ambre"] {
+  --paper: #fff7e8;
+  --card: #fffdf7;
+  --ink: #302516;
+  --ink-soft: #725f42;
+  --rule: #efdfbd;
+  --wash: #f9edcf;
+}
+
 @theme inline {
   --color-paper: var(--paper);
   --color-card: var(--card);
@@ -232,6 +280,14 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--mist);
+}
+.kalam-prose img[data-text-image],
+.book-prose img[data-text-image] {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 0.25rem;
 }
 .kalam-prose .ProseMirror-selectednode {
   outline: 2px solid color-mix(in srgb, var(--blue) 40%, transparent);

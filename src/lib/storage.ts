@@ -42,3 +42,20 @@ export async function uploadCover(
   if (error) throw error;
   return path;
 }
+
+/** Envoie une image insérée dans le corps d'un écrit et renvoie son URL stable. */
+export async function uploadTextImage(
+  supabase: SupabaseClient,
+  userId: string,
+  writingId: string,
+  file: File,
+): Promise<string> {
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${userId}/${writingId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("text-images")
+    .upload(path, file, { contentType: file.type || "image/jpeg" });
+  if (error) throw error;
+  const { data } = supabase.storage.from("text-images").getPublicUrl(path);
+  return data.publicUrl;
+}

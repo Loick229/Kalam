@@ -13,7 +13,7 @@ import { emptyDoc } from "@/lib/editor/document";
 import { editorExtensions } from "@/lib/editor/extensions";
 import { draftKey, readBackup, useAutosave, type SaveState, type WritingPatch } from "@/lib/editor/use-autosave";
 import { genreLabel } from "@/lib/labels";
-import { uploadCover } from "@/lib/storage";
+import { uploadCover, uploadTextImage } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
 import type { Writing } from "@/lib/types";
 import { cn, estimatePages, excerpt } from "@/lib/utils";
@@ -41,6 +41,7 @@ export function Studio({
     subtitle: initial.subtitle,
     author: initial.author,
     genre: initial.genre,
+    page_theme: initial.page_theme ?? "papier",
     status: initial.status,
     summary: initial.summary,
     tags: initial.tags,
@@ -97,7 +98,13 @@ export function Studio({
     content: initial.content ?? emptyDoc(),
     immediatelyRender: false,
     editorProps: {
-      attributes: { class: "kalam-prose", "data-genre": initial.genre, spellcheck: "true", lang: "fr" },
+      attributes: {
+        class: "kalam-prose",
+        "data-genre": initial.genre,
+        "data-page-theme": initial.page_theme,
+        spellcheck: "true",
+        lang: "fr",
+      },
     },
     onCreate: ({ editor }) => refreshOutline(editor),
     onUpdate: ({ editor }) => {
@@ -110,7 +117,13 @@ export function Studio({
   useEffect(() => {
     editor?.setOptions({
       editorProps: {
-        attributes: { class: "kalam-prose", "data-genre": meta.genre, spellcheck: "true", lang: "fr" },
+        attributes: {
+          class: "kalam-prose",
+          "data-genre": meta.genre,
+          "data-page-theme": meta.page_theme,
+          spellcheck: "true",
+          lang: "fr",
+        },
       },
     });
   }, [editor, meta.genre]);
@@ -160,11 +173,24 @@ export function Studio({
     setCoverUrl(null);
   }
 
+  async function insertImage(file: File) {
+    if (!editor) return;
+    if (!file.type.startsWith("image/")) return alert("Choisissez une image.");
+    if (file.size > 10 * 1024 * 1024) return alert("Image trop lourde (10 Mo maximum).");
+    try {
+      const supabase = createClient();
+      const src = await uploadTextImage(supabase, userId, initial.id, file);
+      editor.commands.setTextImage({ src, alt: file.name.replace(/\.[^.]+$/, "") });
+    } catch (error) {
+      alert(`L’image n’a pas pu être ajoutée : ${(error as Error).message}`);
+    }
+  }
+
   function restoreBackup() {
     if (!backup || !editor) return;
     const { content, ...rest } = backup.patch;
     if (content) editor.commands.setContent(content, { emitUpdate: true });
-    const metaKeys = ["title", "subtitle", "author", "genre", "status", "summary", "tags"] as const;
+    const metaKeys = ["title", "subtitle", "author", "genre", "page_theme", "status", "summary", "tags"] as const;
     const metaPatch = Object.fromEntries(metaKeys.filter((k) => k in rest).map((k) => [k, rest[k]]));
     if (Object.keys(metaPatch).length) changeMeta(metaPatch as WritingPatch);
     queue(backup.patch);
@@ -248,7 +274,7 @@ export function Studio({
   const showAside = outlineAside && !focus;
 
   return (
-    <div className="min-h-dvh bg-paper">
+    <div className="writing-surface min-h-dvh bg-paper" data-page-theme={meta.page_theme}>
       {/* Barre du haut */}
       <header
         className={cn(
@@ -304,7 +330,7 @@ export function Studio({
 
         {editor && (
           <div className="border-t border-rule">
-            <Toolbar editor={editor} />
+            <Toolbar editor={editor} onImage={insertImage} />
           </div>
         )}
       </header>
@@ -406,6 +432,7 @@ export function Studio({
           subtitle={meta.subtitle}
           author={meta.author}
           genre={meta.genre}
+          pageTheme={meta.page_theme}
           coverUrl={coverUrl}
           onClose={() => setBookMode(false)}
         />

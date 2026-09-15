@@ -2,6 +2,7 @@
 
 import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
+import { useRef } from "react";
 import {
   AlignCenter,
   AlignJustify,
@@ -11,6 +12,7 @@ import {
   Heading2,
   Heading3,
   Italic,
+  ImagePlus,
   List,
   ListOrdered,
   Minus,
@@ -25,7 +27,7 @@ import { IconButton } from "@/components/ui";
 const ICON = { size: 18, strokeWidth: 1.75 };
 
 /** Barre de mise en forme. Défile horizontalement sur téléphone. */
-export function Toolbar({ editor }: { editor: Editor }) {
+export function Toolbar({ editor, onImage }: { editor: Editor; onImage: (file: File) => void }) {
   const s = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -102,7 +104,30 @@ export function Toolbar({ editor }: { editor: Editor }) {
       <IconButton label="Saut de page (Ctrl+Entrée)" onClick={() => c().setPageBreak().run()}>
         <SeparatorHorizontal {...ICON} />
       </IconButton>
+      <ImageButton onImage={onImage} />
     </div>
+  );
+}
+
+function ImageButton({ onImage }: { onImage: (file: File) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <IconButton label="Insérer une image" onClick={() => input.current?.click()}>
+        <ImagePlus {...ICON} />
+      </IconButton>
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) onImage(file);
+          event.target.value = "";
+        }}
+      />
+    </>
   );
 }
 

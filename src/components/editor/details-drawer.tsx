@@ -5,11 +5,11 @@ import { deleteWriting, setWritingSharing } from "@/app/actions";
 import { CoverPicker } from "@/components/cover-picker";
 import { Drawer, Field, Input, Select, Textarea } from "@/components/ui";
 import type { WritingPatch } from "@/lib/editor/use-autosave";
-import { GENRES, STATUSES } from "@/lib/labels";
-import type { Genre, Status, Writing } from "@/lib/types";
+import { GENRES, PAGE_THEMES, STATUSES } from "@/lib/labels";
+import type { Genre, PageTheme, Status, Writing } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "status" | "summary" | "tags">;
+type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "page_theme" | "status" | "summary" | "tags">;
 
 /** Panneau « Informations » : métadonnées, couverture, suppression. */
 export function DetailsDrawer({
@@ -128,6 +128,16 @@ export function DetailsDrawer({
             </Select>
           </Field>
         </div>
+
+        <Field label="Ambiance du document">
+          <Select value={meta.page_theme} onChange={(e) => onChange({ page_theme: e.target.value as PageTheme })}>
+            {PAGE_THEMES.map((theme) => (
+              <option key={theme.value} value={theme.value}>
+                {theme.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
         <Field label="Résumé" hint="Quatrième de couverture">
           <Textarea

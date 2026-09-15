@@ -5,7 +5,8 @@ import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { baseExtensions } from "@/lib/editor/extensions";
 import { nodeText } from "@/lib/editor/document";
-import type { Genre } from "@/lib/types";
+import { genreLabel } from "@/lib/labels";
+import type { Genre, PageTheme } from "@/lib/types";
 
 const PAGE_CHARACTERS = 2400;
 
@@ -39,6 +40,7 @@ export function BookMode({
   subtitle,
   author,
   genre,
+  pageTheme = "papier",
   coverUrl,
   onClose,
 }: {
@@ -47,6 +49,7 @@ export function BookMode({
   subtitle?: string | null;
   author: string | null;
   genre: Genre;
+  pageTheme?: PageTheme;
   coverUrl?: string | null;
   onClose?: () => void;
 }) {
@@ -73,7 +76,7 @@ export function BookMode({
   const pageContent = pages[currentPage - 1];
 
   return (
-    <div className="book-mode fixed inset-0 z-40 overflow-hidden bg-wash">
+    <div className="book-mode fixed inset-0 z-40 overflow-hidden bg-wash" data-page-theme={pageTheme}>
       <header className="sticky top-0 z-10 border-b border-rule bg-paper/95 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 md:px-6">
           <button
@@ -104,7 +107,7 @@ export function BookMode({
 
         {isTitlePage ? (
           <div className="book-title-page book-page w-full">
-            <p className="eyebrow">{genre}</p>
+            <p className="eyebrow">{genreLabel(genre)}</p>
             <div className="my-auto text-center">
               {coverUrl && (
                 <img src={coverUrl} alt="" className="mx-auto mb-6 max-h-[28vh] w-auto object-contain shadow-card" />

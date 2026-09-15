@@ -6,8 +6,32 @@ import StarterKit from "@tiptap/starter-kit";
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     pageBreak: { setPageBreak: () => ReturnType };
+    textImage: { setTextImage: (attributes: { src: string; alt?: string }) => ReturnType };
   }
 }
+
+export const TextImage = Node.create({
+  name: "textImage",
+  group: "block",
+  atom: true,
+  selectable: true,
+  draggable: true,
+  addAttributes() {
+    return {
+      src: { default: null },
+      alt: { default: "" },
+    };
+  },
+  parseHTML: () => [{ tag: "img[data-text-image]" }],
+  renderHTML: ({ HTMLAttributes }) => ["img", mergeAttributes(HTMLAttributes, { "data-text-image": "", loading: "lazy" })],
+  addCommands() {
+    return {
+      setTextImage:
+        (attributes: { src: string; alt?: string }) =>
+        ({ chain }) => chain().insertContent([{ type: this.name, attrs: attributes }, { type: "paragraph" }]).run(),
+    };
+  },
+});
 
 /**
  * Saut de page : bloc invisible à l'impression, qui force une nouvelle
@@ -43,6 +67,7 @@ export const baseExtensions: AnyExtension[] = [
   }),
   TextAlign.configure({ types: ["heading", "paragraph"], alignments: ["left", "center", "right", "justify"] }),
   PageBreak,
+  TextImage,
 ];
 
 /** Extensions complètes de l'éditeur. */

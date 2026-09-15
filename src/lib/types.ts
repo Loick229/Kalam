@@ -1,6 +1,20 @@
 import type { JSONContent } from "@tiptap/core";
 
-export type Genre = "poeme" | "nouvelle" | "texte" | "livre" | "document";
+export type Genre =
+  | "poeme"
+  | "nouvelle"
+  | "texte"
+  | "livre"
+  | "document"
+  | "romance"
+  | "policier"
+  | "fantasy"
+  | "science_fiction"
+  | "erotique"
+  | "theatre"
+  | "essai"
+  | "autobiographie";
+export type PageTheme = "papier" | "nuit" | "foret" | "ocean" | "rose" | "ambre";
 export type Status = "brouillon" | "en_cours" | "termine";
 
 /** Un écrit tel que stocké dans la table `writings`. */
@@ -11,6 +25,7 @@ export interface Writing {
   subtitle: string | null;
   author: string | null;
   genre: Genre;
+  page_theme: PageTheme;
   status: Status;
   summary: string | null;
   tags: string[];

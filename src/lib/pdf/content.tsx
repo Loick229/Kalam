@@ -2,7 +2,7 @@
  * Conversion d'un document Tiptap (JSON) en éléments react-pdf.
  */
 
-import { Text, View } from "@react-pdf/renderer";
+import { Image, Text, View } from "@react-pdf/renderer";
 import type { JSONContent } from "@tiptap/core";
 import type { ReactNode } from "react";
 
@@ -173,6 +173,13 @@ export function renderBody(doc: JSONContent | null, s: ContentStyle, registry?: 
 
       case "pageBreak":
         return <View key={key} break />;
+
+      case "textImage":
+        return (
+          <View key={key} wrap={false} style={{ alignItems: "center", marginVertical: s.fontSize * 1.2 }}>
+            <Image src={n.attrs?.src as string} style={{ maxWidth: "100%", maxHeight: 360 }} />
+          </View>
+        );
 
       default:
         return null;

@@ -36,7 +36,7 @@ create table if not exists public.writings (
   subtitle       text,
   author         text,
   genre          text not null default 'texte'
-                 check (genre in ('poeme', 'nouvelle', 'texte', 'livre', 'document')),
+                 check (genre in ('poeme', 'nouvelle', 'texte', 'livre', 'document', 'romance', 'policier', 'fantasy', 'science_fiction', 'erotique', 'theatre', 'essai', 'autobiographie')),
   status         text not null default 'brouillon'
                  check (status in ('brouillon', 'en_cours', 'termine')),
   summary        text,
@@ -55,12 +55,25 @@ create table if not exists public.writings (
   visibility     text not null default 'private'
                  check (visibility in ('private', 'link', 'public')),
   share_slug     text unique,
+  page_theme     text not null default 'papier'
+                 check (page_theme in ('papier', 'nuit', 'foret', 'ocean', 'rose', 'ambre')),
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
 
 create index if not exists writings_user_updated_idx
   on public.writings (user_id, updated_at desc);
+
+-- Migration des installations existantes.
+alter table public.writings add column if not exists page_theme text not null default 'papier';
+alter table public.writings drop constraint if exists writings_genre_check;
+alter table public.writings add constraint writings_genre_check check (
+  genre in ('poeme', 'nouvelle', 'texte', 'livre', 'document', 'romance', 'policier', 'fantasy', 'science_fiction', 'erotique', 'theatre', 'essai', 'autobiographie')
+);
+alter table public.writings drop constraint if exists writings_page_theme_check;
+alter table public.writings add constraint writings_page_theme_check check (
+  page_theme in ('papier', 'nuit', 'foret', 'ocean', 'rose', 'ambre')
+);
 
 -- ---------------------------------------------------------------------
 --  Fiches de résumé : une par écrit.
@@ -127,8 +140,19 @@ create policy "fiches personnelles" on public.summary_sheets
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 insert into storage.buckets (id, name, public)
-values ('covers', 'covers', false), ('documents', 'documents', false)
+values ('covers', 'covers', false), ('documents', 'documents', false), ('text-images', 'text-images', true)
 on conflict (id) do nothing;
+
+drop policy if exists "images de textes - lecture" on storage.objects;
+create policy "images de textes - lecture" on storage.objects
+  for select to anon, authenticated using (bucket_id = 'text-images');
+
+drop policy if exists "images de textes - ajout" on storage.objects;
+create policy "images de textes - ajout" on storage.objects
+  for insert to authenticated with check (
+    bucket_id = 'text-images'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
 
 drop policy if exists "fichiers personnels - lecture" on storage.objects;
 create policy "fichiers personnels - lecture" on storage.objects
