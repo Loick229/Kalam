@@ -452,6 +452,7 @@ export function Studio({
         backgroundBusy={backgroundBusy}
         onBackgroundPick={pickBackground}
         onBackgroundRemove={removeBackground}
+        flush={flush}
       />
 
       {bookMode && (

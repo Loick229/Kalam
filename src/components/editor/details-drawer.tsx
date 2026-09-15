@@ -27,6 +27,7 @@ export function DetailsDrawer({
   onBackgroundPick,
   onBackgroundRemove,
   folders,
+  flush,
 }: {
   open: boolean;
   onClose: () => void;
@@ -41,6 +42,7 @@ export function DetailsDrawer({
   onBackgroundPick: (f: File) => void;
   onBackgroundRemove: () => void;
   folders: WritingFolder[];
+  flush: () => Promise<void>;
 }) {
   const [tagText, setTagText] = useState(meta.tags.join(", "));
   const [sharing, setSharing] = useState(writing.visibility === "link" && !!writing.share_slug);
@@ -59,6 +61,7 @@ export function DetailsDrawer({
     setShareError(null);
     startSharing(async () => {
       try {
+        await flush();
         const result = await setWritingSharing(writing.id, next);
         setSharing(next);
         setShareSlug(result.share_slug);

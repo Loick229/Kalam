@@ -5,6 +5,9 @@ import { signCoverUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import type { Genre, PageTheme } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type SharedWriting = {
   title: string;
   subtitle: string | null;
