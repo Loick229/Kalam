@@ -56,14 +56,15 @@ export function Toolbar({ editor, onImage }: { editor: Editor; onImage: (file: F
   const c = () => editor.chain().focus();
 
   return (
-    <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto px-3 py-1.5 md:justify-center">
+    <div className="relative">
+      <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto px-3 py-1.5 md:justify-center">
       <IconButton label="Annuler" disabled={!s.canUndo} onClick={() => c().undo().run()}>
         <Undo2 {...ICON} />
       </IconButton>
       <IconButton label="Rétablir" disabled={!s.canRedo} onClick={() => c().redo().run()}>
         <Redo2 {...ICON} />
       </IconButton>
-      <SearchButton editor={editor} open={searchOpen} onToggle={() => setSearchOpen((open) => !open)} />
+        <SearchButton open={searchOpen} onToggle={() => setSearchOpen((open) => !open)} />
       <Sep />
       <IconButton label="Titre de chapitre" active={s.h1} onClick={() => c().toggleHeading({ level: 1 }).run()}>
         <Heading1 {...ICON} />
@@ -111,14 +112,24 @@ export function Toolbar({ editor, onImage }: { editor: Editor; onImage: (file: F
       <IconButton label="Saut de page (Ctrl+Entrée)" onClick={() => c().setPageBreak().run()}>
         <SeparatorHorizontal {...ICON} />
       </IconButton>
-      <ImageButton onImage={onImage} />
+        <ImageButton onImage={onImage} />
+      </div>
+      <SearchPanel editor={editor} open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }
 
 type Match = { from: number; to: number };
 
-function SearchButton({ editor, open, onToggle }: { editor: Editor; open: boolean; onToggle: () => void }) {
+function SearchButton({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  return (
+    <IconButton label="Rechercher dans le texte" active={open} onClick={onToggle}>
+      <Search {...ICON} />
+    </IconButton>
+  );
+}
+
+function SearchPanel({ editor, open, onClose }: { editor: Editor; open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [current, setCurrent] = useState(0);
   const [revision, setRevision] = useState(0);
@@ -165,11 +176,7 @@ function SearchButton({ editor, open, onToggle }: { editor: Editor; open: boolea
   }
 
   return (
-    <div className="relative flex shrink-0 items-center">
-      <IconButton label="Rechercher dans le texte" active={open} onClick={onToggle}>
-        <Search {...ICON} />
-      </IconButton>
-      {open && (
+      open && (
         <div className="absolute top-10 left-0 z-40 flex items-center gap-1 rounded-md border border-rule bg-card p-1.5 shadow-card sm:left-1/2 sm:-translate-x-1/2">
           <input
             autoFocus
@@ -180,7 +187,7 @@ function SearchButton({ editor, open, onToggle }: { editor: Editor; open: boolea
                 event.preventDefault();
                 move(event.shiftKey ? -1 : 1);
               }
-              if (event.key === "Escape") onToggle();
+              if (event.key === "Escape") onClose();
             }}
             placeholder="Rechercher…"
             aria-label="Rechercher dans le texte"
@@ -207,8 +214,7 @@ function SearchButton({ editor, open, onToggle }: { editor: Editor; open: boolea
             Tout supprimer
           </button>
         </div>
-      )}
-    </div>
+      )
   );
 }
 
