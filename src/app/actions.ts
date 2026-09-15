@@ -25,12 +25,23 @@ export async function createWriting(formData: FormData) {
 /** Supprime un écrit, sa fiche (cascade) et ses fichiers. */
 export async function deleteWriting(id: string) {
   const { supabase } = await requireUser();
-  const { data } = await supabase.from("writings").select("cover_path, source_path").eq("id", id).single();
+  const { data, error: readError } = await supabase
+    .from("writings")
+    .select("cover_path, source_path")
+    .eq("id", id)
+    .single();
 
-  if (data?.cover_path) await supabase.storage.from("covers").remove([data.cover_path]);
-  if (data?.source_path) await supabase.storage.from("documents").remove([data.source_path]);
+  if (readError) throw new Error(readError.message);
 
-  await supabase.from("writings").delete().eq("id", id);
+  if (data?.cover_path) {
+    await supabase.storage.from("covers").remove([data.cover_path]);
+  }
+  if (data?.source_path) {
+    await supabase.storage.from("documents").remove([data.source_path]);
+  }
+
+  const { error: deleteError } = await supabase.from("writings").delete().eq("id", id);
+  if (deleteError) throw new Error(deleteError.message);
   revalidatePath("/");
   redirect("/");
 }

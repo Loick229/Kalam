@@ -1,10 +1,11 @@
 "use client";
 
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
-import { ArrowLeft, BookDown, Check, FileText, ListTree, Maximize2, Minimize2, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, BookDown, BookOpen, Check, FileText, ListTree, Maximize2, Minimize2, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DetailsDrawer } from "@/components/editor/details-drawer";
+import { BookMode } from "@/components/editor/book-mode";
 import { Outline, type HeadingEntry } from "@/components/editor/outline";
 import { Toolbar } from "@/components/editor/toolbar";
 import { Drawer, IconButton } from "@/components/ui";
@@ -51,6 +52,8 @@ export function Studio({
   const [outlineAside, setOutlineAside] = useState(true);
   const [outlineDrawer, setOutlineDrawer] = useState(false);
   const [focus, setFocus] = useState(false);
+  const [bookMode, setBookMode] = useState(false);
+  const [bookContent, setBookContent] = useState(initial.content);
   const [headings, setHeadings] = useState<HeadingEntry[]>([]);
   const [counts, setCounts] = useState({ words: initial.word_count, chars: initial.content_text.length });
   const [backup, setBackup] = useState<ReturnType<typeof readBackup>>(null);
@@ -63,6 +66,7 @@ export function Studio({
   const persistContent = useCallback(
     (ed: Editor) => {
       const text = ed.getText({ blockSeparator: "\n\n" });
+      setBookContent(ed.getJSON());
       queue({
         content: ed.getJSON(),
         content_text: text,
@@ -274,6 +278,9 @@ export function Studio({
             <IconButton label="Mode focus" onClick={toggleFocus}>
               <Maximize2 size={18} strokeWidth={1.75} />
             </IconButton>
+            <IconButton label="Mode livre" onClick={() => setBookMode(true)}>
+              <BookOpen size={18} strokeWidth={1.75} />
+            </IconButton>
             <span className="mx-1.5 hidden h-5 w-px bg-rule sm:block" />
             <Link
               href={`/ecrits/${initial.id}/fiche`}
@@ -391,6 +398,16 @@ export function Studio({
         onCoverPick={pickCover}
         onCoverRemove={removeCover}
       />
+
+      {bookMode && (
+        <BookMode
+          content={bookContent}
+          title={meta.title}
+          author={meta.author}
+          genre={meta.genre}
+          onClose={() => setBookMode(false)}
+        />
+      )}
     </div>
   );
 }

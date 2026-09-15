@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowDownUp, FileUp, LayoutGrid, List, PenLine, Search } from "lucide-react";
+import { ArrowDownUp, FileUp, LayoutGrid, List, PenLine, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { createWriting } from "@/app/actions";
+import { createWriting, deleteWriting } from "@/app/actions";
 import { LogoMark } from "@/components/logo";
 import { Button, IconButton, StatusDot } from "@/components/ui";
 import { GENRES, genreLabel, statusLabel } from "@/lib/labels";
@@ -167,10 +167,8 @@ export function Library({ writings }: { writings: WritingCard[] }) {
 
 function GridCard({ w }: { w: WritingCard }) {
   return (
-    <Link
-      href={`/ecrits/${w.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-card ring-1 ring-rule/60 transition hover:-translate-y-0.5 hover:ring-mist/50"
-    >
+    <div className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-card ring-1 ring-rule/60 transition hover:-translate-y-0.5 hover:ring-mist/50">
+      <Link href={`/ecrits/${w.id}`}>
       {w.cover_url ? (
         <div className="aspect-[16/9] overflow-hidden bg-wash">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -181,9 +179,9 @@ function GridCard({ w }: { w: WritingCard }) {
           />
         </div>
       ) : null}
+      </Link>
 
-
-      <div className="flex flex-1 flex-col p-5">
+      <Link href={`/ecrits/${w.id}`} className="flex flex-1 flex-col p-5">
         <div className="flex items-center justify-between">
           <span className="eyebrow">{genreLabel(w.genre)}</span>
           <StatusDot status={w.status} label={statusLabel(w.status)} />
@@ -213,14 +211,18 @@ function GridCard({ w }: { w: WritingCard }) {
             </span>
           )}
         </div>
+      </Link>
+      <div className="px-5 pb-4">
+        <DeleteControl id={w.id} title={w.title} />
       </div>
-    </Link>
+    </div>
   );
 }
 
 function ListRow({ w }: { w: WritingCard }) {
   return (
-    <Link href={`/ecrits/${w.id}`} className="group flex items-center gap-4 py-4 transition hover:bg-wash/60 md:px-2">
+    <div className="group flex items-center gap-4 py-4 transition hover:bg-wash/60 md:px-2">
+      <Link href={`/ecrits/${w.id}`} className="flex min-w-0 flex-1 items-center gap-4">
       <div className="h-16 w-12 shrink-0 overflow-hidden rounded-[3px] bg-wash ring-1 ring-rule">
         {w.cover_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -242,7 +244,30 @@ function ListRow({ w }: { w: WritingCard }) {
         <StatusDot status={w.status} label={statusLabel(w.status)} />
       </div>
       <div className="w-20 text-right text-xs text-mist">{relativeDate(w.updated_at)}</div>
-    </Link>
+      </Link>
+      <DeleteControl id={w.id} title={w.title} />
+    </div>
+  );
+}
+
+function DeleteControl({ id, title }: { id: string; title: string }) {
+  return (
+    <form
+      action={deleteWriting.bind(null, id)}
+      onSubmit={(event) => {
+        if (!confirm(`Supprimer définitivement « ${title || "Sans titre"} » ?`)) event.preventDefault();
+      }}
+      className="shrink-0"
+    >
+      <button
+        type="submit"
+        aria-label={`Supprimer ${title || "Sans titre"}`}
+        title="Supprimer"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-mist transition hover:bg-red/10 hover:text-red"
+      >
+        <Trash2 size={16} strokeWidth={1.75} />
+      </button>
+    </form>
   );
 }
 

@@ -251,6 +251,60 @@ body {
   margin-top: 0.15em;
 }
 
+/* Aperçu paginé du livre dans l'atelier. */
+.book-page {
+  position: relative;
+  display: flex;
+  min-height: min(76vh, 820px);
+  flex-direction: column;
+  background: var(--card);
+  padding: clamp(2rem, 7vw, 5rem);
+  box-shadow: var(--shadow);
+}
+.book-title-page {
+  min-height: min(76vh, 820px);
+  justify-content: space-between;
+  text-align: center;
+}
+.book-prose {
+  margin: auto 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1rem, 1.2vw, 1.18rem);
+  line-height: 1.85;
+  color: var(--ink);
+}
+.book-prose > * + * {
+  margin-top: 0.9em;
+}
+.book-prose h1,
+.book-prose h2,
+.book-prose h3 {
+  font-family: var(--font-display);
+  line-height: 1.25;
+  font-weight: 600;
+}
+.book-prose h1 { font-size: 2rem; margin-top: 0; }
+.book-prose h2 { font-size: 1.5rem; }
+.book-prose h3 { font-size: 1.2rem; font-style: italic; }
+.book-prose ul,
+.book-prose ol { padding-left: 1.4em; }
+.book-prose ul { list-style: disc; }
+.book-prose ol { list-style: decimal; }
+.book-prose blockquote { border-left: 2px solid var(--red); padding-left: 1.1em; font-style: italic; color: var(--ink-soft); }
+.book-page-number {
+  margin-top: auto;
+  padding-top: 2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--mist);
+}
+@media (max-width: 640px) {
+  .book-page {
+    min-height: 78vh;
+    padding: 2rem 1.5rem;
+  }
+}
+
 @media print {
   body {
     background: white;
