@@ -33,6 +33,51 @@ export async function createFolder(formData: FormData) {
   revalidatePath("/");
 }
 
+/** Supprime un dossier, ses sous-dossiers, ses écrits et leurs fichiers associés. */
+export async function deleteFolder(id: string) {
+  const { supabase, user } = await requireUser();
+  const { data: folders, error: folderError } = await supabase.from("writing_folders").select("id, parent_id");
+  if (folderError) throw new Error(folderError.message);
+
+  const folderIds = new Set<string>([id]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const folder of folders ?? []) {
+      if (folder.parent_id && folderIds.has(folder.parent_id) && !folderIds.has(folder.id)) {
+        folderIds.add(folder.id);
+        changed = true;
+      }
+    }
+  }
+
+  const { data: writings, error: writingError } = await supabase
+    .from("writings")
+    .select("id, cover_path, source_path")
+    .in("folder_id", [...folderIds]);
+  if (writingError) throw new Error(writingError.message);
+
+  const coverPaths = (writings ?? []).map((writing) => writing.cover_path).filter(Boolean) as string[];
+  const sourcePaths = (writings ?? []).map((writing) => writing.source_path).filter(Boolean) as string[];
+  const textImagePaths: string[] = [];
+  for (const writing of writings ?? []) {
+    const { data: files } = await supabase.storage.from("text-images").list(`${user.id}/${writing.id}`);
+    for (const file of files ?? []) textImagePaths.push(`${user.id}/${writing.id}/${file.name}`);
+  }
+  if (coverPaths.length) await supabase.storage.from("covers").remove(coverPaths);
+  if (sourcePaths.length) await supabase.storage.from("documents").remove(sourcePaths);
+  if (textImagePaths.length) await supabase.storage.from("text-images").remove(textImagePaths);
+
+  if (writings?.length) {
+    const { error } = await supabase.from("writings").delete().in("id", writings.map((writing) => writing.id));
+    if (error) throw new Error(error.message);
+  }
+
+  const { error: deleteError } = await supabase.from("writing_folders").delete().in("id", [...folderIds]);
+  if (deleteError) throw new Error(deleteError.message);
+  revalidatePath("/");
+}
+
 /** Supprime un écrit, sa fiche (cascade) et ses fichiers. */
 export async function deleteWriting(id: string) {
   const { supabase } = await requireUser();

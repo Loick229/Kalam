@@ -3,7 +3,7 @@
 import { ArrowDownUp, FileUp, Folder, FolderPlus, LayoutGrid, List, PenLine, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { createFolder, createWriting, deleteWriting } from "@/app/actions";
+import { createFolder, createWriting, deleteFolder, deleteWriting } from "@/app/actions";
 import { LogoMark } from "@/components/logo";
 import { Button, IconButton, StatusDot } from "@/components/ui";
 import { genreLabel, statusLabel } from "@/lib/labels";
@@ -181,6 +181,7 @@ function FolderNav({
         {folders.map((folder) => (
           <FolderButton
             key={folder.id}
+            id={folder.id}
             active={selected === folder.id}
             count={writings.filter((writing) => writing.folder_id === folder.id).length}
             onClick={() => onSelect(folder.id)}
@@ -192,13 +193,31 @@ function FolderNav({
   );
 }
 
-function FolderButton({ active, count, label, onClick }: { active: boolean; count: number; label: string; onClick: () => void }) {
+function FolderButton({ id, active, count, label, onClick }: { id?: string; active: boolean; count: number; label: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition", active ? "bg-ink text-paper" : "text-ink-soft hover:bg-wash hover:text-ink")}>
+    <div className={cn("flex w-full items-center gap-1 rounded-md text-sm transition", active ? "bg-ink text-paper" : "text-ink-soft hover:bg-wash hover:text-ink")}>
+      <button type="button" onClick={onClick} className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left">
       <Folder size={16} strokeWidth={1.75} />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       <span className={cn("text-xs", active ? "text-paper/70" : "text-mist")}>{count}</span>
-    </button>
+      </button>
+      {id && <DeleteFolderButton id={id} label={label} />}
+    </div>
+  );
+}
+
+function DeleteFolderButton({ id, label }: { id: string; label: string }) {
+  return (
+    <form
+      action={deleteFolder.bind(null, id)}
+      onSubmit={(event) => {
+        if (!confirm(`Supprimer le dossier « ${label} » et tout son contenu ?`)) event.preventDefault();
+      }}
+    >
+      <button type="submit" aria-label={`Supprimer le dossier ${label}`} title="Supprimer le dossier" className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-mist hover:bg-red/10 hover:text-red">
+        <Trash2 size={15} strokeWidth={1.75} />
+      </button>
+    </form>
   );
 }
 
