@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { deleteWriting } from "@/app/actions";
+import { useEffect, useState, useTransition } from "react";
+import { deleteWriting, setWritingSharing } from "@/app/actions";
 import { CoverPicker } from "@/components/cover-picker";
 import { Drawer, Field, Input, Select, Textarea } from "@/components/ui";
 import type { WritingPatch } from "@/lib/editor/use-autosave";
@@ -34,6 +34,10 @@ export function DetailsDrawer({
   onCoverRemove: () => void;
 }) {
   const [tagText, setTagText] = useState(meta.tags.join(", "));
+  const [sharing, setSharing] = useState(writing.visibility === "link" && !!writing.share_slug);
+  const [shareSlug, setShareSlug] = useState(writing.share_slug);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [shareBusy, startSharing] = useTransition();
   useEffect(() => setTagText(meta.tags.join(", ")), [meta.tags]);
 
   const commitTags = () => {
@@ -41,12 +45,58 @@ export function DetailsDrawer({
     if (tags.join("|") !== meta.tags.join("|")) onChange({ tags });
   };
 
+  function toggleSharing() {
+    const next = !sharing;
+    setShareError(null);
+    startSharing(async () => {
+      try {
+        const result = await setWritingSharing(writing.id, next);
+        setSharing(next);
+        setShareSlug(result.share_slug);
+      } catch (error) {
+        setShareError((error as Error).message);
+      }
+    });
+  }
+
+  async function copyShareLink() {
+    if (!shareSlug) return;
+    await navigator.clipboard.writeText(`${window.location.origin}/partage/${shareSlug}`);
+  }
+
   return (
     <Drawer open={open} onClose={onClose} title="Informations">
       <div className="space-y-5">
         <Field label="Couverture">
           <CoverPicker url={coverUrl} busy={coverBusy} onPick={onCoverPick} onRemove={onCoverRemove} />
         </Field>
+
+        <div className="rounded-md border border-rule bg-wash px-4 py-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-ink">Partager en lecture seule</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                Toute personne avec le lien peut lire cet ouvrage sans se connecter.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={sharing}
+              onClick={toggleSharing}
+              disabled={shareBusy}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition ${sharing ? "bg-blue" : "bg-mist/40"}`}
+            >
+              <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${sharing ? "left-6" : "left-1"}`} />
+            </button>
+          </div>
+          {sharing && shareSlug && (
+            <button type="button" onClick={copyShareLink} className="mt-3 text-sm font-medium text-blue-ink hover:underline">
+              Copier le lien de lecture
+            </button>
+          )}
+          {shareError && <p className="mt-2 text-xs text-red">{shareError}</p>}
+        </div>
 
         <Field label="Titre">
           <Input value={meta.title} onChange={(e) => onChange({ title: e.target.value })} />

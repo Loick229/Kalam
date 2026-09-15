@@ -46,6 +46,24 @@ export async function deleteWriting(id: string) {
   redirect("/");
 }
 
+/** Active ou révoque le lien de lecture seule d'un écrit. */
+export async function setWritingSharing(id: string, enabled: boolean) {
+  const { supabase } = await requireUser();
+  const patch = enabled
+    ? { visibility: "link" as const, share_slug: crypto.randomUUID() }
+    : { visibility: "private" as const, share_slug: null };
+  const { data, error } = await supabase
+    .from("writings")
+    .update(patch)
+    .eq("id", id)
+    .select("share_slug, visibility")
+    .single();
+
+  if (error) throw new Error(error.message);
+  revalidatePath(`/ecrits/${id}`);
+  return data;
+}
+
 export async function savePenName(formData: FormData) {
   const { supabase, user } = await requireUser();
   const penName = String(formData.get("pen_name") ?? "").trim() || null;

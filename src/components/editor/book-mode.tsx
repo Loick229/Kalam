@@ -36,19 +36,24 @@ function paginate(content: JSONContent | null | undefined) {
 export function BookMode({
   content,
   title,
+  subtitle,
   author,
   genre,
+  coverUrl,
   onClose,
 }: {
   content: JSONContent | null | undefined;
   title: string;
+  subtitle?: string | null;
   author: string | null;
   genre: Genre;
-  onClose: () => void;
+  coverUrl?: string | null;
+  onClose?: () => void;
 }) {
   const pages = paginate(content);
   const totalPages = pages.length + 1;
   const [currentPage, setCurrentPage] = useState(0);
+  const close = onClose ?? (() => window.history.back());
 
   const goToPage = (page: number) => {
     setCurrentPage(Math.max(0, Math.min(page, totalPages - 1)));
@@ -58,11 +63,11 @@ export function BookMode({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowLeft") goToPage(currentPage - 1);
       if (event.key === "ArrowRight") goToPage(currentPage + 1);
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") close();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [currentPage, onClose, totalPages]);
+  }, [close, currentPage, totalPages]);
 
   const isTitlePage = currentPage === 0;
   const pageContent = pages[currentPage - 1];
@@ -73,7 +78,7 @@ export function BookMode({
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 md:px-6">
           <button
             type="button"
-            onClick={onClose}
+            onClick={close}
             className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm text-ink-soft hover:bg-wash hover:text-ink"
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
@@ -101,7 +106,11 @@ export function BookMode({
           <div className="book-title-page book-page w-full">
             <p className="eyebrow">{genre}</p>
             <div className="my-auto text-center">
+              {coverUrl && (
+                <img src={coverUrl} alt="" className="mx-auto mb-6 max-h-[28vh] w-auto object-contain shadow-card" />
+              )}
               <h1 className="font-display text-4xl font-semibold leading-tight md:text-6xl">{title || "Sans titre"}</h1>
+              {subtitle && <p className="mt-3 font-serif text-lg text-ink-soft italic">{subtitle}</p>}
               {author && <p className="mt-4 font-serif text-lg text-ink-soft italic">{author}</p>}
             </div>
             <span className="eyebrow text-center">Kalam</span>

@@ -403,8 +403,10 @@ export function Studio({
         <BookMode
           content={bookContent}
           title={meta.title}
+          subtitle={meta.subtitle}
           author={meta.author}
           genre={meta.genre}
+          coverUrl={coverUrl}
           onClose={() => setBookMode(false)}
         />
       )}

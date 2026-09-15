@@ -117,14 +117,14 @@ drop policy if exists "écrits personnels" on public.writings;
 create policy "écrits personnels" on public.writings
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
+drop policy if exists "lecture des écrits partagés" on public.writings;
+create policy "lecture des écrits partagés" on public.writings
+  for select using (visibility = 'link' and share_slug is not null);
+
 drop policy if exists "fiches personnelles" on public.summary_sheets;
 create policy "fiches personnelles" on public.summary_sheets
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
--- ---------------------------------------------------------------------
---  Stockage : couvertures et documents d'origine, privés.
---  Les fichiers sont rangés dans un dossier portant l'id de l'utilisateur.
--- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
 values ('covers', 'covers', false), ('documents', 'documents', false)
 on conflict (id) do nothing;
@@ -134,6 +134,18 @@ create policy "fichiers personnels - lecture" on storage.objects
   for select using (
     bucket_id in ('covers', 'documents')
     and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "lecture des couvertures partagées" on storage.objects;
+create policy "lecture des couvertures partagées" on storage.objects
+  for select using (
+    bucket_id = 'covers'
+    and exists (
+      select 1 from public.writings
+      where writings.cover_path = storage.objects.name
+        and writings.visibility = 'link'
+        and writings.share_slug is not null
+    )
   );
 
 drop policy if exists "fichiers personnels - ajout" on storage.objects;
