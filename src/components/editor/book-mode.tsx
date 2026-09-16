@@ -14,21 +14,26 @@ function paginate(content: JSONContent | null | undefined) {
   const pages: JSONContent[][] = [[]];
   let length = 0;
 
+  const pushPage = () => {
+    if (pages.at(-1)?.length) pages.push([]);
+    length = 0;
+  };
+
   for (const node of content?.content ?? []) {
     if (node.type === "pageBreak") {
-      if (pages.at(-1)?.length) pages.push([]);
-      length = 0;
+      pushPage();
       continue;
     }
 
+    const nodeLength = Math.max(nodeText(node).length, 80);
     const startsChapter = node.type === "heading" && node.attrs?.level === 1 && pages.at(-1)?.length;
-    if (startsChapter || (length >= PAGE_CHARACTERS && pages.at(-1)?.length)) {
-      pages.push([]);
-      length = 0;
+
+    if (startsChapter || (length + nodeLength > PAGE_CHARACTERS && pages.at(-1)?.length)) {
+      pushPage();
     }
 
     pages.at(-1)!.push(node);
-    length += Math.max(nodeText(node).length, 80);
+    length += nodeLength;
   }
 
   return pages.filter((page) => page.length > 0);
@@ -75,7 +80,7 @@ export function BookMode({
   }, [close, currentPage, totalPages]);
 
   const isTitlePage = currentPage === 0;
-  const pageContent = pages[currentPage - 1];
+  const pageContent = pages[currentPage - 1] ?? [];
 
   return (
     <div className="book-mode fixed inset-0 z-40 overflow-hidden bg-wash" data-page-theme={pageTheme}>
