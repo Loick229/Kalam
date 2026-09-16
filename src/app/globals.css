@@ -330,7 +330,7 @@ body {
   color: var(--ink);
   flex: 1 1 auto;
   min-height: 0;
-  padding-bottom: 2.5rem;
+  padding-bottom: 4.5rem;
 }
 .book-prose > * + * {
   margin-top: 0.9em;
@@ -358,35 +358,38 @@ body {
   color: var(--mist);
 }
 .book-page-footer {
+  position: absolute;
+  left: clamp(2.5rem, 6vw, 5.5rem);
+  right: clamp(2.5rem, 6vw, 5.5rem);
+  bottom: clamp(2.2rem, 4vw, 3rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: auto;
   padding-top: 1.25rem;
   border-top: 1px solid var(--rule);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--mist);
+  background: linear-gradient(to top, rgba(16,20,26,0.96), rgba(16,20,26,0.2) 65%, transparent);
 }
 .book-mode main {
   min-height: 0;
 }
 
 .book-mode .book-page {
+  position: relative;
   flex: 1 1 auto;
   height: auto;
   min-height: 0;
   max-height: calc(100dvh - 11rem);
   margin: 0;
-  padding-bottom: clamp(4rem, 8vw, 6rem);
+  padding-bottom: clamp(5rem, 8vw, 7rem);
   background: var(--paper);
   color: var(--ink);
-  overflow-y: auto;
+  overflow: hidden;
   overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 .book-mode .book-page::-webkit-scrollbar {
   display: none;
