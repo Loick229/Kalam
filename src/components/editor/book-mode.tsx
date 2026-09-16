@@ -131,7 +131,7 @@ export function BookMode({
           </div>
         ) : (
           <article
-            className={`book-page w-full${backgroundUrl ? " has-page-background" : ""}`}
+            className={`book-page flex-1 min-h-0 w-full${backgroundUrl ? " has-page-background" : ""}`}
             style={backgroundUrl ? { backgroundImage: `url("${backgroundUrl}")` } : undefined}
           >
             <div
