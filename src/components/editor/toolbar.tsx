@@ -137,7 +137,9 @@ function SearchPanel({ editor, open, onClose }: { editor: Editor; open: boolean;
   useEffect(() => {
     const update = () => setRevision((value) => value + 1);
     editor.on("transaction", update);
-    return () => editor.off("transaction", update);
+    return () => {
+      editor.off("transaction", update);
+    };
   }, [editor]);
 
   const matches = findMatches(editor, query);
