@@ -118,13 +118,19 @@ export function BookMode({
             style={backgroundUrl ? { backgroundImage: `url("${backgroundUrl}")` } : undefined}
           >
             <p className="eyebrow">{genreLabel(genre)}</p>
-            <div className="my-auto text-center">
-              {coverUrl && (
-                <img src={coverUrl} alt="" className="mx-auto mb-6 max-h-[28vh] w-auto object-contain shadow-card" />
-              )}
-              <h1 className="font-display text-4xl font-semibold leading-tight md:text-6xl">{title || "Sans titre"}</h1>
-              {subtitle && <p className="mt-3 font-serif text-lg text-ink-soft italic">{subtitle}</p>}
-              {author && <p className="mt-4 font-serif text-lg text-ink-soft italic">{author}</p>}
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="mb-6 flex flex-col items-center justify-center text-center">
+                {coverUrl && (
+                  <img src={coverUrl} alt="" className="mx-auto max-h-[28vh] w-auto object-contain shadow-card" />
+                )}
+              </div>
+
+              <h1 className="font-display text-4xl font-semibold leading-none tracking-[0.08em] md:text-7xl">
+                {title || "Sans titre"}
+              </h1>
+
+              {subtitle && <p className="mt-3 font-serif text-lg italic text-ink-soft">{subtitle}</p>}
+              {author && <p className="mt-2 font-serif text-lg italic text-ink-soft">{author}</p>}
             </div>
             <span className="eyebrow text-center">Kalam</span>
           </div>

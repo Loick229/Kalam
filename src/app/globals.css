@@ -319,8 +319,12 @@ body {
 }
 .book-title-page {
   min-height: min(82vh, 960px);
-  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  gap: 1.25rem;
 }
 .book-prose {
   margin: 0;
