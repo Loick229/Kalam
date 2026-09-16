@@ -131,6 +131,7 @@ function SearchButton({ open, onToggle }: { open: boolean; onToggle: () => void 
 
 function SearchPanel({ editor, open, onClose }: { editor: Editor; open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
+  const [replaceText, setReplaceText] = useState("");
   const [current, setCurrent] = useState(0);
   const [revision, setRevision] = useState(0);
 
@@ -164,6 +165,21 @@ function SearchPanel({ editor, open, onClose }: { editor: Editor; open: boolean;
     selectMatch(editor, matches[next]);
   }
 
+  function replaceCurrent() {
+    if (!active) return;
+    editor.chain().focus().deleteRange(active).insertContent(replaceText).run();
+  }
+
+  function replaceAll() {
+    if (!matches.length) return;
+    const ranges = [...matches].reverse();
+    const chain = editor.chain().focus();
+    for (const range of ranges) {
+      chain.deleteRange(range).insertContent(replaceText);
+    }
+    chain.run();
+  }
+
   function deleteCurrent() {
     if (!active) return;
     editor.chain().focus().deleteRange(active).run();
@@ -178,45 +194,75 @@ function SearchPanel({ editor, open, onClose }: { editor: Editor; open: boolean;
   }
 
   return (
-      open && (
-        <div className="absolute top-10 left-0 z-40 flex items-center gap-1 rounded-md border border-rule bg-card p-1.5 shadow-card sm:left-1/2 sm:-translate-x-1/2">
-          <input
-            autoFocus
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                move(event.shiftKey ? -1 : 1);
-              }
-              if (event.key === "Escape") onClose();
-            }}
-            placeholder="Rechercher…"
-            aria-label="Rechercher dans le texte"
-            className="h-8 w-40 bg-transparent px-2 text-sm text-ink outline-none placeholder:text-mist sm:w-56"
-          />
-          <span className="min-w-12 text-center text-xs tabular-nums text-mist">
-            {matches.length ? `${current + 1}/${matches.length}` : query ? "0 résultat" : ""}
-          </span>
-          <IconButton label="Résultat précédent" disabled={!matches.length} onClick={() => move(-1)}>
-            <ChevronUp {...ICON} />
-          </IconButton>
-          <IconButton label="Résultat suivant" disabled={!matches.length} onClick={() => move(1)}>
-            <ChevronDown {...ICON} />
-          </IconButton>
-          <IconButton label="Supprimer le résultat courant" disabled={!active} onClick={deleteCurrent}>
-            <Trash2 {...ICON} />
-          </IconButton>
-          <button
-            type="button"
-            disabled={!matches.length}
-            onClick={deleteAll}
-            className="h-8 whitespace-nowrap rounded px-2 text-xs text-red hover:bg-red/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Tout supprimer
-          </button>
-        </div>
-      )
+    open && (
+      <div className="absolute top-10 left-0 z-40 flex max-w-[min(90vw,740px)] flex-wrap items-center gap-1 rounded-md border border-rule bg-card p-1.5 shadow-card sm:left-1/2 sm:-translate-x-1/2">
+        <input
+          autoFocus
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              move(event.shiftKey ? -1 : 1);
+            }
+            if (event.key === "Escape") onClose();
+          }}
+          placeholder="Rechercher…"
+          aria-label="Rechercher dans le texte"
+          className="h-8 w-40 bg-transparent px-2 text-sm text-ink outline-none placeholder:text-mist sm:w-56"
+        />
+        <span className="min-w-12 text-center text-xs tabular-nums text-mist">
+          {matches.length ? `${current + 1}/${matches.length}` : query ? "0 résultat" : ""}
+        </span>
+        <IconButton label="Résultat précédent" disabled={!matches.length} onClick={() => move(-1)}>
+          <ChevronUp {...ICON} />
+        </IconButton>
+        <IconButton label="Résultat suivant" disabled={!matches.length} onClick={() => move(1)}>
+          <ChevronDown {...ICON} />
+        </IconButton>
+        <input
+          value={replaceText}
+          onChange={(event) => setReplaceText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && event.shiftKey) {
+              event.preventDefault();
+              replaceCurrent();
+            }
+            if (event.key === "Escape") onClose();
+          }}
+          placeholder="Remplacer…"
+          aria-label="Remplacer le texte"
+          className="h-8 w-32 bg-transparent px-2 text-sm text-ink outline-none placeholder:text-mist sm:w-36"
+        />
+        <button
+          type="button"
+          disabled={!active || !replaceText}
+          onClick={replaceCurrent}
+          className="h-8 whitespace-nowrap rounded px-2 text-xs text-ink-soft hover:bg-wash disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Remplacer
+        </button>
+        <button
+          type="button"
+          disabled={!matches.length || !replaceText}
+          onClick={replaceAll}
+          className="h-8 whitespace-nowrap rounded px-2 text-xs text-ink-soft hover:bg-wash disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Tout remplacer
+        </button>
+        <IconButton label="Supprimer le résultat courant" disabled={!active} onClick={deleteCurrent}>
+          <Trash2 {...ICON} />
+        </IconButton>
+        <button
+          type="button"
+          disabled={!matches.length}
+          onClick={deleteAll}
+          className="h-8 whitespace-nowrap rounded px-2 text-xs text-red hover:bg-red/10 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Tout supprimer
+        </button>
+      </div>
+    )
   );
 }
 
