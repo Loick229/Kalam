@@ -328,7 +328,7 @@ body {
   font-size: clamp(1.08rem, 1.4vw, 1.35rem);
   line-height: 1.9;
   color: var(--ink);
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   padding-bottom: 2.5rem;
 }
@@ -370,16 +370,23 @@ body {
   text-transform: uppercase;
   color: var(--mist);
 }
+.book-mode main {
+  min-height: 0;
+}
+
 .book-mode .book-page {
+  flex: 1 1 auto;
   height: auto;
   min-height: 0;
-  max-height: none;
+  max-height: calc(100dvh - 11rem);
   margin: 0;
   padding-bottom: clamp(4rem, 8vw, 6rem);
   background: var(--paper);
   color: var(--ink);
-  overflow: visible;
+  overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .book-mode .book-page::-webkit-scrollbar {
   display: none;
