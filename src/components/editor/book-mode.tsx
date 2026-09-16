@@ -101,7 +101,7 @@ export function BookMode({
         </div>
       </header>
 
-      <main className="relative mx-auto flex h-[calc(100dvh-3.5rem)] w-full max-w-6xl items-center px-12 py-4 md:px-24 md:py-8">
+      <main className="relative mx-auto flex h-[calc(100dvh-3.5rem)] w-full max-w-7xl items-center px-4 py-2 md:px-8 md:py-4">
         <button
           type="button"
           onClick={() => goToPage(currentPage - 1)}

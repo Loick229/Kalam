@@ -311,14 +311,14 @@ body {
 .book-page {
   position: relative;
   display: flex;
-  min-height: min(82vh, 960px);
+  min-height: min(88vh, 1040px);
   flex-direction: column;
   background: var(--card);
-  padding: clamp(2.5rem, 6vw, 5rem) clamp(2.5rem, 6vw, 5.5rem) clamp(3.5rem, 6vw, 5rem);
+  padding: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 4vw, 3rem);
   box-shadow: var(--shadow);
 }
 .book-title-page {
-  min-height: min(82vh, 960px);
+  min-height: min(88vh, 1040px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -329,7 +329,7 @@ body {
 .book-prose {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(1.08rem, 1.4vw, 1.35rem);
+  font-size: clamp(1.2rem, 1.6vw, 1.8rem);
   line-height: 1.9;
   color: var(--ink);
   flex: 1 1 auto;
