@@ -329,6 +329,8 @@ body {
   line-height: 1.9;
   color: var(--ink);
   flex: 1;
+  min-height: 0;
+  padding-bottom: 2.5rem;
 }
 .book-prose > * + * {
   margin-top: 0.9em;
@@ -369,17 +371,15 @@ body {
   color: var(--mist);
 }
 .book-mode .book-page {
-  height: 100%;
+  height: auto;
   min-height: 0;
-  max-height: 100%;
+  max-height: none;
   margin: 0;
   padding-bottom: clamp(4rem, 8vw, 6rem);
   background: var(--paper);
   color: var(--ink);
-  overflow-y: auto;
+  overflow: visible;
   overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 .book-mode .book-page::-webkit-scrollbar {
   display: none;
