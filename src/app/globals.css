@@ -330,7 +330,15 @@ body {
   color: var(--ink);
   flex: 1 1 auto;
   min-height: 0;
-  padding-bottom: 4.5rem;
+  max-height: calc(100dvh - 15rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 3rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.book-prose::-webkit-scrollbar {
+  display: none;
 }
 .book-prose > * + * {
   margin-top: 0.9em;
@@ -357,23 +365,6 @@ body {
   font-size: 0.75rem;
   color: var(--mist);
 }
-.book-page-footer {
-  position: absolute;
-  left: clamp(2.5rem, 6vw, 5.5rem);
-  right: clamp(2.5rem, 6vw, 5.5rem);
-  bottom: clamp(2.2rem, 4vw, 3rem);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--rule);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--mist);
-  background: linear-gradient(to top, rgba(16,20,26,0.96), rgba(16,20,26,0.2) 65%, transparent);
-}
 .book-mode main {
   min-height: 0;
 }
@@ -385,7 +376,7 @@ body {
   min-height: 0;
   max-height: calc(100dvh - 11rem);
   margin: 0;
-  padding-bottom: clamp(5rem, 8vw, 7rem);
+  padding-bottom: clamp(3rem, 6vw, 4rem);
   background: var(--paper);
   color: var(--ink);
   overflow: hidden;

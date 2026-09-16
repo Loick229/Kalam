@@ -81,7 +81,6 @@ export function BookMode({
 
   const isTitlePage = currentPage === 0;
   const pageContent = pages[currentPage - 1] ?? [];
-  const footerText = title || "Sans titre";
 
   return (
     <div className="book-mode fixed inset-0 z-40 overflow-hidden bg-wash" data-page-theme={pageTheme}>
@@ -140,10 +139,6 @@ export function BookMode({
                 __html: generateHTML({ type: "doc", content: pageContent }, baseExtensions),
               }}
             />
-            <footer className="book-page-footer">
-              <span>{footerText}</span>
-              <span>{currentPage}</span>
-            </footer>
           </article>
         )}
 
