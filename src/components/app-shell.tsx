@@ -3,6 +3,7 @@
 import { BookOpen, FileText, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Wordmark } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
@@ -18,6 +19,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" || pathname.startsWith("/importer") : pathname.startsWith(href);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <div className="min-h-dvh pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
