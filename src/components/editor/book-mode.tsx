@@ -79,6 +79,8 @@ export function BookMode({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [close, currentPage, totalPages]);
 
+  // `key` sur la page : un nœud neuf à chaque tour de page, donc un défilement
+  // qui repart du haut au lieu de garder la position de la page précédente.
   const isTitlePage = currentPage === 0;
   const pageContent = pages[currentPage - 1] ?? [];
 
@@ -136,6 +138,7 @@ export function BookMode({
           </div>
         ) : (
           <article
+            key={currentPage}
             className={`book-page flex-1 min-h-0 w-full${backgroundUrl ? " has-page-background" : ""}`}
             style={backgroundUrl ? { backgroundImage: `url("${backgroundUrl}")` } : undefined}
           >
