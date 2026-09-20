@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Lora, Playfair_Display } from "next/font/google";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -47,7 +48,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-dvh bg-paper text-ink">{children}</body>
+      <body className="min-h-dvh bg-paper text-ink">
+        <ScrollToTop />
+        {children}
+      </body>
     </html>
   );
 }
