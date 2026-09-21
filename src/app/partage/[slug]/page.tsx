@@ -55,6 +55,7 @@ export default async function SharedWritingPage({ params }: { params: Promise<{ 
       pageTheme={writing.page_theme ?? "papier"}
       backgroundUrl={writing.page_background_url}
       coverUrl={coverUrl}
+      bookmarkKey={`partage-${slug}`}
       content={writing.content}
     />
   );

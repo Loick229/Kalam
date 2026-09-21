@@ -465,6 +465,7 @@ export function Studio({
           pageTheme={meta.page_theme}
           backgroundUrl={meta.page_background_url}
           coverUrl={coverUrl}
+          bookmarkKey={initial.id}
           onClose={() => setBookMode(false)}
         />
       )}
