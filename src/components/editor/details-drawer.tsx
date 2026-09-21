@@ -10,7 +10,20 @@ import { GENRES, PAGE_THEMES, STATUSES } from "@/lib/labels";
 import type { Genre, PageTheme, Status, Writing, WritingFolder } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-type Meta = Pick<Writing, "title" | "subtitle" | "author" | "genre" | "page_theme" | "page_background_url" | "folder_id" | "status" | "summary" | "tags">;
+type Meta = Pick<
+  Writing,
+  | "title"
+  | "subtitle"
+  | "author"
+  | "genre"
+  | "page_theme"
+  | "page_background_url"
+  | "folder_id"
+  | "status"
+  | "summary"
+  | "tags"
+  | "hidden"
+>;
 
 /** Panneau « Informations » : métadonnées, couverture, suppression. */
 export function DetailsDrawer({
@@ -117,6 +130,27 @@ export function DetailsDrawer({
             </button>
           )}
           {shareError && <p className="mt-2 text-xs text-red">{shareError}</p>}
+        </div>
+
+        <div className="rounded-md border border-rule bg-wash px-4 py-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-ink">Masquer de la bibliothèque</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                L’écrit disparaît de « Tous les écrits » et de la recherche. Il reste visible en entrant dans son
+                dossier, ou en activant l’œil dans la bibliothèque.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={meta.hidden}
+              onClick={() => onChange({ hidden: !meta.hidden })}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition ${meta.hidden ? "bg-ink" : "bg-mist/40"}`}
+            >
+              <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${meta.hidden ? "left-6" : "left-1"}`} />
+            </button>
+          </div>
         </div>
 
         <Field label="Titre">

@@ -1,9 +1,16 @@
 "use client";
 
-import { ArrowDownUp, FileUp, Folder, FolderPlus, LayoutGrid, List, PenLine, Search, Trash2 } from "lucide-react";
+import { ArrowDownUp, Eye, EyeOff, FileUp, Folder, FolderPlus, LayoutGrid, List, PenLine, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { createFolder, createWriting, deleteFolder, deleteWriting } from "@/app/actions";
+import {
+  createFolder,
+  createWriting,
+  deleteFolder,
+  deleteWriting,
+  setFolderWritingsHidden,
+  setWritingHidden,
+} from "@/app/actions";
 import { LogoMark } from "@/components/logo";
 import { Button, IconButton, StatusDot } from "@/components/ui";
 import { genreLabel, statusLabel } from "@/lib/labels";
@@ -18,6 +25,8 @@ export function Library({ writings, folders }: { writings: WritingCard[]; folder
   const [folderId, setFolderId] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort>("date");
   const [view, setView] = useState<View>("grid");
+  // Révélation volontaire, jamais mémorisée : chaque visite repart masqué.
+  const [reveal, setReveal] = useState(false);
 
   // Préférence d'affichage mémorisée sur l'appareil.
   useEffect(() => {
@@ -33,21 +42,31 @@ export function Library({ writings, folders }: { writings: WritingCard[]; folder
     } catch {}
   };
 
+  // Un écrit masqué ne réapparaît que dans son dossier — il faut y entrer —
+  // ou quand la révélation est activée depuis la barre d'outils.
   const shown = useMemo(() => {
     const q = normalize(query);
-    const list = writings.filter(
-      (w) =>
-        (folderId === null || w.folder_id === folderId) &&
-        (!q || normalize(`${w.title} ${w.subtitle ?? ""} ${w.excerpt} ${w.tags.join(" ")}`).includes(q)),
-    );
+    const list = writings.filter((w) => {
+      if (folderId === null) {
+        if (w.hidden && !reveal) return false;
+      } else if (w.folder_id !== folderId) {
+        return false;
+      }
+      return !q || normalize(`${w.title} ${w.subtitle ?? ""} ${w.excerpt} ${w.tags.join(" ")}`).includes(q);
+    });
     return list.sort((a, b) => {
       if (sort === "title") return a.title.localeCompare(b.title, "fr");
       if (sort === "genre") return genreLabel(a.genre).localeCompare(genreLabel(b.genre), "fr");
       return b.updated_at.localeCompare(a.updated_at);
     });
-  }, [writings, query, folderId, sort]);
+  }, [writings, query, folderId, sort, reveal]);
 
-  const totalWords = writings.reduce((n, w) => n + w.word_count, 0);
+  const counted = reveal ? writings : writings.filter((w) => !w.hidden);
+  const hiddenCount = writings.filter((w) => w.hidden).length;
+  const openFolder = folders.find((folder) => folder.id === folderId) ?? null;
+  const folderWritings = openFolder ? writings.filter((w) => w.folder_id === openFolder.id) : [];
+  const folderAllHidden = folderWritings.length > 0 && folderWritings.every((w) => w.hidden);
+  const totalWords = counted.reduce((n, w) => n + w.word_count, 0);
 
   return (
     <div>
@@ -55,7 +74,7 @@ export function Library({ writings, folders }: { writings: WritingCard[]; folder
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="eyebrow">
-            {writings.length} écrit{writings.length > 1 ? "s" : ""} · {totalWords.toLocaleString("fr-FR")} mots
+            {counted.length} écrit{counted.length > 1 ? "s" : ""} · {totalWords.toLocaleString("fr-FR")} mots
           </p>
           <h1 className="mt-1 font-display text-[2.5rem] leading-none font-semibold tracking-tight md:text-[3.25rem]">
             Bibliothèque
@@ -108,6 +127,15 @@ export function Library({ writings, folders }: { writings: WritingCard[]; folder
               <option value="genre">Genre</option>
             </select>
           </label>
+          {hiddenCount > 0 && (
+            <IconButton
+              label={reveal ? `Masquer les ${hiddenCount} écrits discrets` : `Afficher les ${hiddenCount} écrits masqués`}
+              active={reveal}
+              onClick={() => setReveal((value) => !value)}
+            >
+              {reveal ? <Eye size={17} strokeWidth={1.75} /> : <EyeOff size={17} strokeWidth={1.75} />}
+            </IconButton>
+          )}
           <IconButton label="Grille" active={view === "grid"} onClick={() => changeView("grid")}>
             <LayoutGrid size={17} strokeWidth={1.75} />
           </IconButton>
@@ -119,13 +147,49 @@ export function Library({ writings, folders }: { writings: WritingCard[]; folder
 
       {/* Contenu */}
       <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr]">
-        <FolderNav folders={folders} writings={writings} selected={folderId} onSelect={setFolderId} />
+        <FolderNav
+          folders={folders}
+          writings={writings}
+          visibleCount={counted.length}
+          selected={folderId}
+          onSelect={setFolderId}
+        />
         <div>
+        {openFolder && (
+          <div className="mb-5 flex flex-wrap items-center gap-3 border-b border-rule pb-4">
+            <Folder size={17} strokeWidth={1.75} className="text-mist" />
+            <p className="font-display text-lg font-semibold">{openFolder.name}</p>
+            <span className="text-xs text-mist">
+              {folderWritings.length} écrit{folderWritings.length > 1 ? "s" : ""}
+            </span>
+            {folderWritings.length > 0 && (
+              <form action={setFolderWritingsHidden.bind(null, openFolder.id, !folderAllHidden)} className="ml-auto">
+                <button
+                  type="submit"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-md border border-rule px-3 text-sm text-ink-soft transition hover:border-mist hover:text-ink"
+                >
+                  {folderAllHidden ? <Eye size={16} strokeWidth={1.75} /> : <EyeOff size={16} strokeWidth={1.75} />}
+                  {folderAllHidden ? "Remettre dans la bibliothèque" : "Masquer tout le dossier"}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
         {writings.length === 0 ? (
           <EmptyLibrary />
         ) : shown.length === 0 ? (
           <p className="py-16 text-center text-ink-soft">
-            Rien ne correspond à <span className="font-serif italic">« {query} »</span>.
+            {query ? (
+              <>
+                Rien ne correspond à <span className="font-serif italic">« {query} »</span>.
+              </>
+            ) : openFolder ? (
+              "Ce dossier est vide."
+            ) : hiddenCount > 0 ? (
+              "Tous vos écrits sont masqués. L’œil, ci-dessus, les révèle."
+            ) : (
+              "Tous vos écrits sont rangés dans des dossiers."
+            )}
           </p>
         ) : view === "grid" ? (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -153,11 +217,13 @@ export function Library({ writings, folders }: { writings: WritingCard[]; folder
 function FolderNav({
   folders,
   writings,
+  visibleCount,
   selected,
   onSelect,
 }: {
   folders: WritingFolder[];
   writings: WritingCard[];
+  visibleCount: number;
   selected: string | null;
   onSelect: (id: string | null) => void;
 }) {
@@ -177,7 +243,7 @@ function FolderNav({
         </form>
       )}
       <div className="mt-3 space-y-0.5">
-        <FolderButton active={selected === null} count={writings.length} onClick={() => onSelect(null)} label="Tous les écrits" />
+        <FolderButton active={selected === null} count={visibleCount} onClick={() => onSelect(null)} label="Tous les écrits" />
         {folders.map((folder) => (
           <FolderButton
             key={folder.id}
@@ -240,7 +306,10 @@ function GridCard({ w }: { w: WritingCard }) {
       <Link href={`/ecrits/${w.id}`} className="flex flex-1 flex-col p-5">
         <div className="flex items-center justify-between">
           <span className="eyebrow">{genreLabel(w.genre)}</span>
-          <StatusDot status={w.status} label={statusLabel(w.status)} />
+          <div className="flex items-center gap-2">
+            {w.hidden && <EyeOff size={14} strokeWidth={1.75} className="text-mist" aria-label="Masqué de la bibliothèque" />}
+            <StatusDot status={w.status} label={statusLabel(w.status)} />
+          </div>
         </div>
 
         <h2 className="mt-3 font-display text-[1.375rem] leading-snug font-semibold text-ink group-hover:text-blue-ink">
@@ -268,7 +337,8 @@ function GridCard({ w }: { w: WritingCard }) {
           )}
         </div>
       </Link>
-      <div className="px-5 pb-4">
+      <div className="flex items-center gap-1 px-5 pb-4">
+        <HideControl w={w} />
         <DeleteControl id={w.id} title={w.title} />
       </div>
     </div>
@@ -290,8 +360,9 @@ function ListRow({ w }: { w: WritingCard }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <h2 className="truncate font-display text-lg font-semibold group-hover:text-blue-ink">
+        <h2 className="flex items-center gap-2 truncate font-display text-lg font-semibold group-hover:text-blue-ink">
           {w.title || "Sans titre"}
+          {w.hidden && <EyeOff size={14} strokeWidth={1.75} className="shrink-0 text-mist" aria-label="Masqué de la bibliothèque" />}
         </h2>
         <p className="truncate font-serif text-sm text-ink-soft">{w.excerpt || "—"}</p>
       </div>
@@ -301,8 +372,26 @@ function ListRow({ w }: { w: WritingCard }) {
       </div>
       <div className="w-20 text-right text-xs text-mist">{relativeDate(w.updated_at)}</div>
       </Link>
+      <HideControl w={w} />
       <DeleteControl id={w.id} title={w.title} />
     </div>
+  );
+}
+
+/** Retire un écrit de la bibliothèque, ou l'y remet : il reste lisible dans son dossier. */
+function HideControl({ w }: { w: WritingCard }) {
+  const label = w.hidden ? "Remettre dans la bibliothèque" : "Masquer de la bibliothèque";
+  return (
+    <form action={setWritingHidden.bind(null, w.id, !w.hidden)} className="shrink-0">
+      <button
+        type="submit"
+        aria-label={`${label} : ${w.title || "Sans titre"}`}
+        title={label}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-mist transition hover:bg-wash hover:text-ink"
+      >
+        {w.hidden ? <Eye size={16} strokeWidth={1.75} /> : <EyeOff size={16} strokeWidth={1.75} />}
+      </button>
+    </form>
   );
 }
 

@@ -102,6 +102,23 @@ export async function deleteWriting(id: string) {
   redirect("/");
 }
 
+/** Masque un écrit de la bibliothèque, ou l'y remet. */
+export async function setWritingHidden(id: string, hidden: boolean) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("writings").update({ hidden }).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath(`/ecrits/${id}`);
+}
+
+/** Masque (ou réaffiche) d'un coup tous les écrits d'un dossier. */
+export async function setFolderWritingsHidden(folderId: string, hidden: boolean) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("writings").update({ hidden }).eq("folder_id", folderId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+}
+
 /** Active ou révoque le lien de lecture seule d'un écrit. */
 export async function setWritingSharing(id: string, enabled: boolean) {
   const { supabase } = await requireUser();

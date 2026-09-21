@@ -47,6 +47,7 @@ export function Studio({
     page_theme: initial.page_theme ?? "papier",
     page_background_url: initial.page_background_url ?? null,
     status: initial.status,
+    hidden: initial.hidden ?? false,
     summary: initial.summary,
     tags: initial.tags,
   });

@@ -48,6 +48,8 @@ export interface Writing {
   source_name: string | null;
   source_path: string | null;
   imported_at: string | null;
+  /** Retiré de la bibliothèque tant que la révélation n'est pas activée. */
+  hidden: boolean;
   visibility: "private" | "link" | "public";
   share_slug: string | null;
   created_at: string;
@@ -70,6 +72,7 @@ export type WritingCard = Pick<
   | "updated_at"
   | "created_at"
   | "excerpt"
+  | "hidden"
 > & { cover_url: string | null };
 
 /** Fiche de résumé (table `summary_sheets`). */

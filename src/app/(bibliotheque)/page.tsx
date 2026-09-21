@@ -11,7 +11,7 @@ export default async function LibraryPage() {
 
   const { data, error } = await supabase
     .from("writings")
-    .select("id, folder_id, title, subtitle, genre, status, word_count, cover_path, source_format, tags, excerpt, updated_at, created_at")
+    .select("id, folder_id, title, subtitle, genre, status, word_count, cover_path, source_format, tags, excerpt, hidden, updated_at, created_at")
     .order("updated_at", { ascending: false });
 
   const { data: folders } = await supabase.from("writing_folders").select("*").order("name");
