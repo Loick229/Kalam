@@ -157,6 +157,30 @@ create policy "lecture des écrits partagés" on public.writings
   for select to anon, authenticated
   using (share_slug is not null);
 
+create or replace function public.increment_read_count(p_writing_id uuid)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  updated_count integer;
+begin
+  update public.writings
+  set read_count = coalesce(read_count, 0) + 1
+  where id = p_writing_id
+  returning read_count into updated_count;
+
+  if updated_count is null then
+    return 0;
+  end if;
+
+  return updated_count;
+end;
+$$;
+
+grant execute on function public.increment_read_count(uuid) to anon, authenticated;
+
 drop policy if exists "fiches personnelles" on public.summary_sheets;
 create policy "fiches personnelles" on public.summary_sheets
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());

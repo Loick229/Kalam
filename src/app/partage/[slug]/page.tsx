@@ -29,15 +29,16 @@ async function getSharedWriting(slug: string) {
 
   if (error || !data) return null;
 
-  const nextCount = (data.read_count ?? 0) + 1;
-  const { error: incrementError } = await supabase.from("writings").update({ read_count: nextCount }).eq("id", data.id);
+  const { data: nextReadCount, error: incrementError } = await supabase.rpc("increment_read_count", {
+    p_writing_id: data.id,
+  });
   if (incrementError) {
     console.error("Impossible d’incrémenter le compteur de lecture :", incrementError.message);
   }
 
   return {
     ...data,
-    read_count: nextCount,
+    read_count: typeof nextReadCount === "number" ? nextReadCount : (data.read_count ?? 0) + 1,
   } as SharedWriting & { read_count: number } | null;
 }
 
