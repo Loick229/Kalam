@@ -64,6 +64,7 @@ create table if not exists public.writings (
   visibility     text not null default 'private'
                  check (visibility in ('private', 'link', 'public')),
   share_slug     text unique,
+  read_count     integer not null default 0,
   page_theme     text not null default 'papier'
                  check (page_theme in ('papier', 'nuit', 'foret', 'ocean', 'rose', 'ambre')),
   page_background_url text,
@@ -81,6 +82,7 @@ alter table public.writings add column if not exists page_theme text not null de
 alter table public.writings add column if not exists page_background_url text;
 alter table public.writings add column if not exists folder_id uuid references public.writing_folders (id) on delete set null;
 alter table public.writings add column if not exists hidden boolean not null default false;
+alter table public.writings add column if not exists read_count integer not null default 0;
 alter table public.writings drop constraint if exists writings_genre_check;
 alter table public.writings add constraint writings_genre_check check (
   genre in ('poeme', 'nouvelle', 'texte', 'livre', 'document', 'romance', 'policier', 'fantasy', 'science_fiction', 'erotique', 'theatre', 'essai', 'autobiographie')

@@ -52,6 +52,7 @@ export interface Writing {
   hidden: boolean;
   visibility: "private" | "link" | "public";
   share_slug: string | null;
+  read_count: number;
   created_at: string;
   updated_at: string;
 }

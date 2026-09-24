@@ -21,12 +21,24 @@ type SharedWriting = {
 
 async function getSharedWriting(slug: string) {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("writings")
-    .select("title, subtitle, author, genre, page_theme, page_background_url, content, cover_path")
+    .select("id, title, subtitle, author, genre, page_theme, page_background_url, content, cover_path, read_count")
     .eq("share_slug", slug)
     .maybeSingle();
-  return data as SharedWriting | null;
+
+  if (error || !data) return null;
+
+  const nextCount = (data.read_count ?? 0) + 1;
+  const { error: incrementError } = await supabase.from("writings").update({ read_count: nextCount }).eq("id", data.id);
+  if (incrementError) {
+    console.error("Impossible d’incrémenter le compteur de lecture :", incrementError.message);
+  }
+
+  return {
+    ...data,
+    read_count: nextCount,
+  } as SharedWriting & { read_count: number } | null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

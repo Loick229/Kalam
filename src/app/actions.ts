@@ -119,11 +119,25 @@ export async function setFolderWritingsHidden(folderId: string, hidden: boolean)
   revalidatePath("/");
 }
 
+/** Génère un identifiant de partage unique et très difficilement devinable. */
+async function generateUniqueShareSlug(supabase: Awaited<ReturnType<typeof requireUser>>["supabase"]) {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    const slug = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+
+    const { data, error } = await supabase.from("writings").select("id").eq("share_slug", slug).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return slug;
+  }
+
+  throw new Error("Impossible de générer un lien de lecture unique.");
+}
+
 /** Active ou révoque le lien de lecture seule d'un écrit. */
 export async function setWritingSharing(id: string, enabled: boolean) {
   const { supabase } = await requireUser();
   const patch = enabled
-    ? { visibility: "link" as const, share_slug: crypto.randomUUID() }
+    ? { visibility: "link" as const, share_slug: await generateUniqueShareSlug(supabase) }
     : { visibility: "private" as const, share_slug: null };
   const { data, error } = await supabase
     .from("writings")

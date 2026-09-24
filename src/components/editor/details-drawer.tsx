@@ -125,9 +125,14 @@ export function DetailsDrawer({
             </button>
           </div>
           {sharing && shareSlug && (
-            <button type="button" onClick={copyShareLink} className="mt-3 text-sm font-medium text-blue-ink hover:underline">
-              Copier le lien de lecture
-            </button>
+            <>
+              <button type="button" onClick={copyShareLink} className="mt-3 text-sm font-medium text-blue-ink hover:underline">
+                Copier le lien de lecture
+              </button>
+              <p className="mt-2 text-xs text-ink-soft">
+                {writing.read_count.toLocaleString("fr-FR")} lecture{writing.read_count > 1 ? "s" : ""}
+              </p>
+            </>
           )}
           {shareError && <p className="mt-2 text-xs text-red">{shareError}</p>}
         </div>
